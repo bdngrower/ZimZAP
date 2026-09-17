@@ -9,10 +9,10 @@ export async function POST(request: Request) {
       return new NextResponse('Missing required fields', { status: 400 });
     }
 
-    // Obter o Token Operacional
-    const operationalToken = process.env.META_ACCESS_TOKEN || process.env.META_SYSTEM_USER_TOKEN;
+    // Obter o Token Operacional (usar apenas o System User Token permanente)
+    const operationalToken = process.env.META_SYSTEM_USER_TOKEN;
     if (!operationalToken) {
-      console.error('Nenhum token da Meta configurado.');
+      console.error('META_SYSTEM_USER_TOKEN não configurado.');
       return new NextResponse('Server configuration error', { status: 500 });
     }
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No WhatsApp account configured' }, { status: 500 });
     }
 
-    console.log(`🚀 Enviando mensagem manual para ${phone}: ${text}`);
+    console.log(`🚀 Enviando mensagem manual para ${phone} usando phone_number_id: ${recipientPhoneId}`);
 
     const sendUrl = `https://graph.facebook.com/v20.0/${recipientPhoneId}/messages`;
     const sendRes = await fetch(sendUrl, {
