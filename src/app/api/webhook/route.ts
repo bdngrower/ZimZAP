@@ -68,7 +68,7 @@ export async function POST(request: Request) {
             // 1. Verifica se o contato existe ou cria um novo vinculado à organização
             let { data: dbContact, error: fetchContactErr } = await supabase
               .from('contacts')
-              .select('id, organization_id, current_flow_id, current_node_id, bot_paused')
+              .select('id, name, phone, organization_id, current_flow_id, current_node_id, bot_paused')
               .eq('phone', phone)
               .maybeSingle();
 
