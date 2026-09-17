@@ -13,6 +13,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
+import { createClient } from '@/utils/supabase/client';
 
 const COLUMNS = [
   { id: 'new', title: 'Novos Leads', color: 'var(--accent-primary)' },
@@ -21,12 +22,28 @@ const COLUMNS = [
 ];
 
 export function KanbanBoard() {
-  const { contacts, loading, fetchContacts, moveContact, addMockContact } = useCRMStore();
+  const { contacts, loading, fetchContacts, moveContact, addMockContact, currentOrganizationId } = useCRMStore();
   const [isMounted, setIsMounted] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     setIsMounted(true);
     fetchContacts();
+
+    // Inscrição Realtime para atualizar os contatos quando chegarem mensagens ou novos leads
+    const channel = supabase
+      .channel('kanban-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contacts' }, () => {
+        fetchContacts();
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+        fetchContacts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchContacts]);
 
   const sensors = useSensors(

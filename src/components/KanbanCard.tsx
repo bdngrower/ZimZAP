@@ -42,9 +42,11 @@ export function KanbanCard({ contact }: KanbanCardProps) {
 
   const statusColors = getStatusColor(contact.status);
 
-  // Formata o horário (Ex: "10:42" ou "Ontem")
-  const dateObj = new Date(contact.created_at);
-  const timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Formata o horário da última atividade (Ex: "10:42" ou "Ontem")
+  const dateObj = new Date(contact.updated_at || contact.created_at);
+  const timeString = isNaN(dateObj.getTime())
+    ? ''
+    : dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div
@@ -52,7 +54,11 @@ export function KanbanCard({ contact }: KanbanCardProps) {
       {...attributes}
       {...listeners}
       className="glass-card"
-      onClick={() => openModal(contact.id)}
+      onClick={(e) => {
+        // Se estiver arrastando, não abre o modal
+        if (isDragging) return;
+        openModal(contact.id);
+      }}
       style={{
         ...style,
         padding: '1.25rem',

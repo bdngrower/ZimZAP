@@ -10,6 +10,7 @@ export type Contact = {
   status: string; // 'new', 'negotiating', 'won', 'lost'
   labels: string[];
   created_at: string;
+  updated_at?: string;
   organization_id: string;
   bot_paused?: boolean;
 };
@@ -21,6 +22,7 @@ type CRMState = {
   activeContactId: string | null;
   fetchUserOrganization: () => Promise<void>;
   fetchContacts: () => Promise<void>;
+  setContacts: (contacts: Contact[]) => void;
   moveContact: (contactId: string, newStatus: string) => Promise<void>;
   addMockContact: () => Promise<void>;
   openModal: (contactId: string) => void;
@@ -36,6 +38,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
 
   openModal: (contactId) => set({ activeContactId: contactId }),
   closeModal: () => set({ activeContactId: null }),
+  setContacts: (contacts) => set({ contacts }),
 
   fetchUserOrganization: async () => {
     // Pega a primeira organização da qual o usuário é membro
@@ -55,11 +58,11 @@ export const useCRMStore = create<CRMState>((set, get) => ({
   fetchContacts: async () => {
     set({ loading: true });
     
-    // RLS já filtra por organização, mas passamos explícito se quisermos
+    // Ordena por updated_at (se houver) ou created_at para as mensagens recentes sempre subirem
     const { data, error } = await supabase
       .from('contacts')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('updated_at', { ascending: false });
 
     if (!error && data) {
       set({ contacts: data, loading: false });

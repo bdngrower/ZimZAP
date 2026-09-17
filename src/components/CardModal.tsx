@@ -114,6 +114,40 @@ export function CardModal() {
     }
   };
 
+  const handleScheduleMessage = async () => {
+    if (!scheduleDate || !scheduleTime || !scheduleMessage.trim() || scheduling || !contact) return;
+    setScheduling(true);
+
+    try {
+      const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}:00`);
+      const res = await fetch('/api/messages/schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contact_id: activeContactId,
+          organization_id: contact.organization_id,
+          content: scheduleMessage,
+          scheduled_at: scheduledDateTime.toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        setScheduleMessage('');
+        setScheduleDate('');
+        setScheduleTime('');
+        alert('Mensagem agendada com sucesso!');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`Erro ao agendar: ${data.error || 'Falha na requisição'}`);
+      }
+    } catch (err) {
+      console.error('Erro ao agendar:', err);
+      alert('Erro inesperado ao agendar mensagem.');
+    } finally {
+      setScheduling(false);
+    }
+  };
+
   return (
     <div 
       style={{
