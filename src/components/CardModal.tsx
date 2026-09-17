@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useCRMStore } from '@/store/useCRMStore';
 import { createClient } from '@/utils/supabase/client';
 
@@ -24,6 +24,24 @@ export function CardModal() {
   
   const supabase = createClient();
 
+  // Derive contact from contacts array (no hooks after this)
+  const contact = useMemo(() => {
+    if (!activeContactId) return null;
+    return contacts.find((c) => c.id === activeContactId) || null;
+  }, [contacts, activeContactId]);
+
+  // Fetch messages function
+  const fetchMessages = useCallback(async () => {
+    if (!activeContactId) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('contact_id', activeContactId)
+      .order('timestamp', { ascending: true });
+    if (data) setMessages(data);
+  }, [activeContactId]);
+
+  // ALL useEffect hooks MUST be before any conditional return
   useEffect(() => {
     if (activeContactId && activeTab === 'chat') {
       fetchMessages();
@@ -40,7 +58,7 @@ export function CardModal() {
         supabase.removeChannel(channel);
       };
     }
-  }, [activeContactId, activeTab]);
+  }, [activeContactId, activeTab, fetchMessages]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -48,10 +66,6 @@ export function CardModal() {
     }
   }, [messages]);
 
-  if (!activeContactId) return null;
-
-  const contact = contacts.find((c) => c.id === activeContactId);
-  
   useEffect(() => {
     if (activeContactId && activeTab === 'chat' && contact) {
       const fetchQuickReplies = async () => {
@@ -60,25 +74,28 @@ export function CardModal() {
       };
       fetchQuickReplies();
     }
-  }, [activeContactId, activeTab]);
+  }, [activeContactId, activeTab, contact]);
 
-  if (!contact) return null;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!activeContactId) {
+      setMessages([]);
+      setNewMessage('');
+      setQuickReplies([]);
+      setFilteredReplies([]);
+      setActiveTab('chat');
+    }
+  }, [activeContactId]);
 
-  const fetchMessages = async () => {
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('contact_id', activeContactId)
-      .order('timestamp', { ascending: true });
-    if (data) setMessages(data);
-  };
+  // NOW we can do conditional returns — all hooks are above
+  if (!activeContactId || !contact) return null;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setNewMessage(val);
     
     if (val.startsWith('/')) {
-      const search = val.toLowerCase(); // keep the slash for matching if we store shortcuts with / or without, let's just match any part
+      const search = val.toLowerCase();
       setFilteredReplies(quickReplies.filter(qr => qr.shortcut.toLowerCase().includes(search) || qr.shortcut.toLowerCase().includes(val.substring(1).toLowerCase())));
     } else {
       setFilteredReplies([]);
