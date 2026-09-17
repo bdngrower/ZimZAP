@@ -6,13 +6,13 @@ import { PageHeader } from '@/components/ui/page-header';
 
 export default function ConfiguracoesPage() {
   return (
-    <div className="flex flex-col flex-1 overflow-y-auto h-full animate-fade-in p-6">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto', height: '100%', padding: '1.5rem' }}>
       <PageHeader 
         title="Configurações da Organização" 
         description="Gerencie os dados, aparência, equipe e integrações do seu negócio."
       />
       
-      <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
+      <div style={{ flex: 1, overflow: 'hidden', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {/* A própria Settings.tsx terá que ser refatorada na Fase 5 para remover o header interno que ela já tem */}
         <Settings />
       </div>
