@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const currentModuleId = pathname.split('/')[1] || 'crm';
   const subsections = MODULE_SUBSECTIONS[currentModuleId] || [];
-  const hasSubsections = subsections.length > 0;
+  const hasSubsections = subsections.length > 1;
 
   if (!currentOrganizationId) {
     return (
@@ -55,13 +55,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'var(--bg-primary)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'transparent' }}>
       
       {/* Tier 1: Main Sidebar (Narrow) */}
       <aside 
         style={{
           width: '68px',
-          backgroundColor: 'var(--surface-elevated)',
+          backgroundColor: 'var(--surface-glass)',
+          backdropFilter: 'var(--glass-blur)',
           borderRight: '1px solid var(--border-subtle)',
           display: 'flex',
           flexDirection: 'column',
@@ -84,6 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: isActive ? 'var(--brand-primary)' : 'transparent',
                 color: isActive ? 'white' : 'var(--text-secondary)',
+                boxShadow: isActive ? 'var(--shadow-glow)' : 'none',
                 transition: 'all 0.2s ease'
               }}
               title={mod.label}
@@ -104,6 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: isActive ? 'var(--brand-primary)' : 'transparent',
                 color: isActive ? 'white' : 'var(--text-secondary)',
+                boxShadow: isActive ? 'var(--shadow-glow)' : 'none',
                 transition: 'all 0.2s ease'
               }}
               title={mod.label}
@@ -135,7 +138,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <aside
           style={{
             width: '230px',
-            backgroundColor: 'var(--surface-base)',
+            backgroundColor: 'var(--surface-glass)',
+            backdropFilter: 'var(--glass-blur)',
             borderRight: '1px solid var(--border-subtle)',
             display: 'flex',
             flexDirection: 'column',
@@ -198,7 +202,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '2rem' }} className="bg-surface-base">
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '2rem', minHeight: 0 }}>
           {children}
         </main>
       </div>

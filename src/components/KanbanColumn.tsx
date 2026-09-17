@@ -25,10 +25,11 @@ export function KanbanColumn({ id, title, color, contacts }: KanbanColumnProps) 
         minWidth: '320px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
-        background: isOver ? 'rgba(255,255,255,0.05)' : 'transparent',
+        background: isOver ? 'var(--surface-raised)' : 'var(--surface-base)',
+        border: '1px solid var(--border-subtle)',
         borderRadius: 'var(--radius-md)',
-        transition: 'background 0.2s',
+        transition: 'all 0.2s ease',
+        overflow: 'hidden'
       }}
     >
       {/* Column Header */}
@@ -37,9 +38,9 @@ export function KanbanColumn({ id, title, color, contacts }: KanbanColumnProps) 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0.5rem 1rem',
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: 'var(--radius-sm)',
+          padding: '1rem',
+          borderBottom: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--surface-elevated)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -59,7 +60,7 @@ export function KanbanColumn({ id, title, color, contacts }: KanbanColumnProps) 
       </div>
 
       {/* Cards Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', gap: '0.75rem', minHeight: '150px' }}>
         <SortableContext items={contacts.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {contacts.map((contact) => (
             <KanbanCard key={contact.id} contact={contact} />
@@ -67,16 +68,14 @@ export function KanbanColumn({ id, title, color, contacts }: KanbanColumnProps) 
           {contacts.length === 0 && (
             <div
               style={{
-                padding: '2rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px dashed var(--border-strong)',
-                borderRadius: 'var(--radius-md)',
-                marginTop: '0.5rem',
+                padding: '1rem',
+                height: '100%'
               }}
             >
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Vazio</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Nenhum contato</p>
             </div>
           )}
         </SortableContext>

@@ -53,7 +53,7 @@ export function KanbanCard({ contact }: KanbanCardProps) {
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className="glass-card"
+      className="kanban-card"
       onClick={(e) => {
         // Se estiver arrastando, não abre o modal
         if (isDragging) return;
@@ -62,24 +62,23 @@ export function KanbanCard({ contact }: KanbanCardProps) {
       style={{
         ...style,
         padding: '1.25rem',
+        backgroundColor: 'var(--surface-elevated)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        boxShadow: isDragging ? '0 10px 25px rgba(0,0,0,0.5)' : '0 2px 4px rgba(0,0,0,0.1)',
         zIndex: isDragging ? 999 : 1,
         touchAction: 'none' // Previne scroll no mobile durante drag
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <span
-          style={{
-            fontSize: '0.75rem',
-            padding: '2px 8px',
-            background: statusColors.bg,
-            color: statusColors.text,
-            borderRadius: '12px',
-          }}
-        >
-          {contact.status.toUpperCase()}
-        </span>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-          {timeString}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: statusColors.text }}></div>
+          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: statusColors.text }}>
+            {contact.status.toUpperCase()}
+          </span>
+        </div>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span>🕒</span> {timeString}
         </span>
       </div>
       

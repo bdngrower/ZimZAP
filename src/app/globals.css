@@ -111,6 +111,8 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   background-color: var(--bg-primary);
+  background-image: radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.03), transparent 30%), radial-gradient(circle at 85% 90%, rgba(79, 70, 229, 0.03), transparent 30%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-outfit), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -154,6 +156,19 @@ a {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kanban-card {
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: grab;
+}
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+.kanban-card:active {
+  cursor: grabbing;
 }
 
 /* Tipografia Base */
