@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useCRMStore } from '@/store/useCRMStore';
-import { getWhatsAppAccounts, fetchMetaPhonesFromCode, connectAndRegisterWhatsApp, disconnectWhatsAppAccount, connectManualWhatsAppAccount } from '@/app/actions/whatsapp';
+import { getWhatsAppAccounts, fetchMetaPhonesFromCode, connectAndRegisterWhatsApp, disconnectWhatsAppAccount } from '@/app/actions/whatsapp';
 
 // Tipagem global para o SDK do Facebook
 declare global {
@@ -24,13 +24,6 @@ export function Settings() {
   // Estado para o fluxo de PIN (Etapa 2 do modal)
   const [selectedPhoneForPin, setSelectedPhoneForPin] = useState<any | null>(null);
   const [pin, setPin] = useState('');
-
-  // Estado para Conexão Manual por ID (quando o Embedded Signup não encontra a WABA)
-  const [showManualModal, setShowManualModal] = useState(false);
-  const [manualPhoneId, setManualPhoneId] = useState('1308359749030333');
-  const [manualWabaId, setManualWabaId] = useState('1413549137402979');
-  const [manualPhoneNumber, setManualPhoneNumber] = useState('+55 (19) 99435-3857');
-  const [manualDisplayName, setManualDisplayName] = useState('ZimHub');
 
   const oauthRedirectUriRef = useRef<string | null>(null);
   const loginInProgressRef = useRef(false);
@@ -271,36 +264,7 @@ export function Settings() {
     }
   };
 
-  const handleManualConnect = async () => {
-    if (!currentOrganizationId) {
-      alert("Nenhuma organização selecionada.");
-      return;
-    }
-    if (!manualPhoneId || !manualWabaId) {
-      alert("Preencha o Phone Number ID e o WABA ID.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await connectManualWhatsAppAccount({
-        organizationId: currentOrganizationId,
-        wabaId: manualWabaId.trim(),
-        phoneId: manualPhoneId.trim(),
-        displayName: manualDisplayName.trim() || 'WhatsApp Business',
-        displayPhoneNumber: manualPhoneNumber.trim() || manualPhoneId.trim(),
-      });
-      if (!res.success) {
-        alert("Erro ao conectar: " + res.error);
-      } else {
-        setShowManualModal(false);
-        await loadAccounts();
-      }
-    } catch (err: any) {
-      alert("Erro ao salvar conta: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const handleDisconnect = async (id: string) => {
     if (!confirm("Deseja realmente desconectar e remover esta conta?")) return;
@@ -332,11 +296,8 @@ export function Settings() {
               <span style={{ color: 'var(--success)' }}>📱</span> Contas WhatsApp
             </h3>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowManualModal(true)} disabled={loading}>
-                + Conectar por ID
-              </button>
-              <button className="btn btn-glass" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={handleConnect} disabled={loading} title="Popup Embedded Signup Oficial">
-                Via Meta Popup
+              <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={handleConnect} disabled={loading} title="Popup Embedded Signup Oficial">
+                Conectar WhatsApp
               </button>
             </div>
           </div>
@@ -349,11 +310,10 @@ export function Settings() {
               <div style={{ textAlign: 'center', padding: '2rem 1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-sm)' }}>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Nenhum WhatsApp conectado</p>
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <button className="btn btn-primary" onClick={() => setShowManualModal(true)}>Conectar por ID (Recomendado)</button>
-                  <button className="btn btn-glass" onClick={handleConnect}>Via Meta Popup</button>
+                  <button className="btn btn-primary" onClick={handleConnect}>Conectar WhatsApp</button>
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.75rem' }}>
-                  Conecte direto usando o Phone Number ID e WABA ID da sua conta comercial.
+                  A autorização usará o processo Embedded Signup oficial da Meta.
                 </p>
               </div>
             ) : (
@@ -524,97 +484,6 @@ export function Settings() {
         </div>
       )}
 
-      {/* Modal Conexão Manual por ID */}
-      {showManualModal && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 999,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div className="glass-card" style={{ width: '100%', maxWidth: '440px', padding: '2rem' }}>
-            <h3 style={{ margin: '0 0 0.5rem 0' }}>Conectar WhatsApp por ID</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Insira os identificadores da sua conta no painel WhatsApp Manager da Meta.
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Identificação do Telefone (Phone Number ID)
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  style={{ width: '100%' }}
-                  value={manualPhoneId}
-                  onChange={(e) => setManualPhoneId(e.target.value)}
-                  placeholder="Ex: 1308359749030333"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  WhatsApp Business Account ID (WABA ID)
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  style={{ width: '100%' }}
-                  value={manualWabaId}
-                  onChange={(e) => setManualWabaId(e.target.value)}
-                  placeholder="Ex: 1413549137402979"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Número com DDI e DDD
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  style={{ width: '100%' }}
-                  value={manualPhoneNumber}
-                  onChange={(e) => setManualPhoneNumber(e.target.value)}
-                  placeholder="+55 (19) 99435-3857"
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  Nome da Empresa / Linha
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  style={{ width: '100%' }}
-                  value={manualDisplayName}
-                  onChange={(e) => setManualDisplayName(e.target.value)}
-                  placeholder="ZimHub"
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button
-                onClick={() => setShowManualModal(false)}
-                className="btn btn-glass"
-                style={{ flex: 1 }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleManualConnect}
-                disabled={loading || !manualPhoneId || !manualWabaId}
-                className="btn btn-primary"
-                style={{ flex: 1 }}
-              >
-                {loading ? 'Salvando...' : 'Conectar Conta'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

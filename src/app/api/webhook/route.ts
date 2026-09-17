@@ -55,14 +55,9 @@ export async function POST(request: Request) {
               if (waAcc) orgId = waAcc.organization_id;
             }
 
-            // Fallback se não achou pela conta: pega a primeira organização existente
             if (!orgId) {
-              const { data: fallbackOrg } = await supabase
-                .from('organizations')
-                .select('id')
-                .limit(1)
-                .single();
-              if (fallbackOrg) orgId = fallbackOrg.id;
+              console.error(`UNKNOWN_PHONE_NUMBER_ID: Webhook recebido para phone_number_id ${recipientPhoneId} que não está cadastrado em nenhuma organização. Ignorando.`);
+              return new NextResponse('OK', { status: 200 }); // Retorna 200 para a Meta não reenviar
             }
 
             // 1. Verifica se o contato existe ou cria um novo vinculado à organização
@@ -70,6 +65,7 @@ export async function POST(request: Request) {
               .from('contacts')
               .select('id, name, phone, organization_id, current_flow_id, current_node_id, bot_paused')
               .eq('phone', phone)
+              .eq('organization_id', orgId)
               .maybeSingle();
 
             if (fetchContactErr) {
@@ -129,10 +125,15 @@ export async function POST(request: Request) {
                   let currentNodeId = dbContact.current_node_id;
                   let shouldProcessNextNode = true;
                   let flowData: any = null;
+                  const graphApiVersion = process.env.META_GRAPH_API_VERSION || 'v20.0';
 
                   // Função auxiliar para carregar o fluxo
                   const loadFlowData = async (flowId: string) => {
-                    const { data } = await supabase.from('automations').select('flow_data').eq('id', flowId).single();
+                    const { data } = await supabase.from('automations')
+                      .select('flow_data')
+                      .eq('id', flowId)
+                      .eq('organization_id', dbContact.organization_id)
+                      .single();
                     return data?.flow_data;
                   };
 
@@ -199,7 +200,7 @@ export async function POST(request: Request) {
                                 );
                                 
                                 // Enviar confirmação direta
-                                const confirmUrl = `https://graph.facebook.com/v20.0/${recipientPhoneId}/messages`;
+                                const confirmUrl = `https://graph.facebook.com/${graphApiVersion}/${recipientPhoneId}/messages`;
                                 await fetch(confirmUrl, {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${operationalToken}` },
@@ -365,7 +366,7 @@ export async function POST(request: Request) {
 
                       console.log(`🤖 Bot enviando: ${messageContent}`);
 
-                      const sendUrl = `https://graph.facebook.com/v20.0/${recipientPhoneId}/messages`;
+                      const sendUrl = `https://graph.facebook.com/${graphApiVersion}/${recipientPhoneId}/messages`;
                       const sendRes = await fetch(sendUrl, {
                         method: 'POST',
                         headers: {

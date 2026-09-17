@@ -3,8 +3,13 @@
 import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { revalidatePath } from 'next/cache';
+import { requireTenant, requireOrganizationRole } from '@/lib/auth';
+
+const graphVersion = process.env.META_GRAPH_API_VERSION || 'v20.0';
 
 export async function getWhatsAppAccounts(organizationId: string) {
+  await requireTenant(organizationId);
+
   const { data, error } = await supabaseAdmin
     .from('whatsapp_accounts')
     .select('id, display_name, display_phone_number, connection_status, waba_id, phone_number_id')
@@ -48,7 +53,7 @@ export async function assertSystemUserAccessToWaba(wabaId: string): Promise<bool
   if (!systemUserId) throw new Error('META_SYSTEM_USER_ID não configurado.');
 
   try {
-    const url = `https://graph.facebook.com/v20.0/${wabaId}/assigned_users`;
+    const url = `https://graph.facebook.com/${graphVersion}/${wabaId}/assigned_users`;
     const res = await fetch(url, {
       headers: { 'Authorization': `Bearer ${operationalToken}` }
     });
@@ -139,7 +144,7 @@ export async function fetchMetaPhonesFromCode(authData: {
 
   if (authData.type === 'token') {
     // 1. Usando o Access Token retornado diretamente pelo SDK (Fluxo de OAuth User Token)
-    const debugUrl = `https://graph.facebook.com/v20.0/debug_token?input_token=${authData.value}`;
+    const debugUrl = `https://graph.facebook.com/${graphVersion}/debug_token?input_token=${authData.value}`;
     const debugRes = await fetch(debugUrl, {
       headers: { 'Authorization': `Bearer ${systemUserToken}` }
     });
@@ -191,7 +196,7 @@ export async function fetchMetaPhonesFromCode(authData: {
       redirect_uri: rUri
     });
 
-    const tokenUrl = `https://graph.facebook.com/v20.0/oauth/access_token?${params.toString()}`;
+    const tokenUrl = `https://graph.facebook.com/${graphVersion}/oauth/access_token?${params.toString()}`;
     const tokenRes = await fetch(tokenUrl);
     const tokenData = await tokenRes.json();
 
@@ -204,7 +209,7 @@ export async function fetchMetaPhonesFromCode(authData: {
         code: tokenData.error?.code,
         error_subcode: tokenData.error?.error_subcode,
         fbtrace_id: tokenData.error?.fbtrace_id,
-        endpoint_used: 'https://graph.facebook.com/v20.0/oauth/access_token'
+        endpoint_used: `https://graph.facebook.com/${graphVersion}/oauth/access_token`
       };
       
       console.error("Meta code exchange failed", errorDetails);
@@ -222,11 +227,11 @@ export async function fetchMetaPhonesFromCode(authData: {
   let wabaList: Array<{ id: string; name?: string }> = [];
   
   if (authData.wabaId) {
-    wabaList.push({ id: authData.wabaId, name: 'ZimHub' });
+    wabaList.push({ id: authData.wabaId, name: 'Desconhecido' });
   }
 
   try {
-    const wabaUrl = `https://graph.facebook.com/v20.0/me/whatsapp_business_accounts?fields=id,name,currency,timezone_id&access_token=${clientUserToken}`;
+    const wabaUrl = `https://graph.facebook.com/${graphVersion}/me/whatsapp_business_accounts?fields=id,name,currency,timezone_id&access_token=${clientUserToken}`;
     const wabaRes = await fetch(wabaUrl);
     const wabaData = await wabaRes.json();
     console.log("WABA Discovery (/me/whatsapp_business_accounts):", wabaData);
@@ -238,7 +243,7 @@ export async function fetchMetaPhonesFromCode(authData: {
 
   if (wabaList.length === 0) {
     try {
-      const bizUrl = `https://graph.facebook.com/v20.0/me/businesses?fields=id,name,owned_whatsapp_business_accounts{id,name},client_whatsapp_business_accounts{id,name}&access_token=${clientUserToken}`;
+      const bizUrl = `https://graph.facebook.com/${graphVersion}/me/businesses?fields=id,name,owned_whatsapp_business_accounts{id,name},client_whatsapp_business_accounts{id,name}&access_token=${clientUserToken}`;
       const bizRes = await fetch(bizUrl);
       const bizData = await bizRes.json();
 
@@ -255,10 +260,7 @@ export async function fetchMetaPhonesFromCode(authData: {
     } catch (e) {}
   }
 
-  // Fallback garantido: usa o WABA ZimHub se a API da Meta não retornou nada sob /me
-  if (wabaList.length === 0) {
-    wabaList.push({ id: '1413549137402979', name: 'ZimHub' });
-  }
+  // Removido fallback garantido para WABA ZimHub (1413549137402979)
 
   // Remove duplicados se houver
   wabaList = wabaList.filter((item, index, self) => index === self.findIndex((t) => t.id === item.id));
@@ -269,19 +271,19 @@ export async function fetchMetaPhonesFromCode(authData: {
   // Se o phoneId foi capturado diretamente do evento do popup
   if (authData.phoneId) {
     try {
-      let phoneUrl = `https://graph.facebook.com/v20.0/${authData.phoneId}?fields=id,display_phone_number,verified_name&access_token=${clientUserToken}`;
+      let phoneUrl = `https://graph.facebook.com/${graphVersion}/${authData.phoneId}?fields=id,display_phone_number,verified_name&access_token=${clientUserToken}`;
       let phoneRes = await fetch(phoneUrl);
       let pData = await phoneRes.json();
       if (!phoneRes.ok || !pData.id) {
-        phoneUrl = `https://graph.facebook.com/v20.0/${authData.phoneId}?fields=id,display_phone_number,verified_name&access_token=${systemUserToken}`;
+        phoneUrl = `https://graph.facebook.com/${graphVersion}/${authData.phoneId}?fields=id,display_phone_number,verified_name&access_token=${systemUserToken}`;
         phoneRes = await fetch(phoneUrl);
         pData = await phoneRes.json();
       }
       if (pData && pData.id) {
         accounts.push({
-          wabaId: authData.wabaId || '1413549137402979',
+          wabaId: authData.wabaId || pData.id, // Não chumbamos mais o ID do ZimHub
           phoneId: pData.id,
-          displayName: pData.verified_name || 'ZimHub',
+          displayName: pData.verified_name || 'Desconhecido',
           displayPhoneNumber: pData.display_phone_number || ''
         });
       }
@@ -293,7 +295,7 @@ export async function fetchMetaPhonesFromCode(authData: {
   // Busca em cada WABA
   for (const waba of wabaList) {
     try {
-      const phoneUrl = `https://graph.facebook.com/v20.0/${waba.id}/phone_numbers?fields=id,display_phone_number,name_status,verified_name&access_token=${clientUserToken}`;
+      const phoneUrl = `https://graph.facebook.com/${graphVersion}/${waba.id}/phone_numbers?fields=id,display_phone_number,name_status,verified_name&access_token=${clientUserToken}`;
       const phoneRes = await fetch(phoneUrl);
       const phoneData = await phoneRes.json();
 
@@ -303,14 +305,14 @@ export async function fetchMetaPhonesFromCode(authData: {
             accounts.push({
               wabaId: waba.id,
               phoneId: phone.id,
-              displayName: phone.verified_name || waba.name || 'ZimHub',
+              displayName: phone.verified_name || waba.name || 'Desconhecido',
               displayPhoneNumber: phone.display_phone_number || ''
             });
           }
         }
       } else {
         // Tenta com systemUserToken
-        const sysPhoneUrl = `https://graph.facebook.com/v20.0/${waba.id}/phone_numbers?fields=id,display_phone_number,name_status,verified_name&access_token=${systemUserToken}`;
+        const sysPhoneUrl = `https://graph.facebook.com/${graphVersion}/${waba.id}/phone_numbers?fields=id,display_phone_number,name_status,verified_name&access_token=${systemUserToken}`;
         const sysPhoneRes = await fetch(sysPhoneUrl);
         const sysPhoneData = await sysPhoneRes.json();
         if (sysPhoneData.data && sysPhoneData.data.length > 0) {
@@ -319,7 +321,7 @@ export async function fetchMetaPhonesFromCode(authData: {
               accounts.push({
                 wabaId: waba.id,
                 phoneId: phone.id,
-                displayName: phone.verified_name || waba.name || 'ZimHub',
+                displayName: phone.verified_name || waba.name || 'Desconhecido',
                 displayPhoneNumber: phone.display_phone_number || ''
               });
             }
@@ -329,24 +331,7 @@ export async function fetchMetaPhonesFromCode(authData: {
     } catch (e) {}
   }
 
-  // Se ainda vazio, consulta diretamente o WABA ZimHub com o System User Token
-  if (accounts.length === 0) {
-    try {
-      const fbUrl = `https://graph.facebook.com/v20.0/1413549137402979/phone_numbers?fields=id,display_phone_number,name_status,verified_name&access_token=${systemUserToken}`;
-      const fbRes = await fetch(fbUrl);
-      const fbData = await fbRes.json();
-      if (fbData.data && fbData.data.length > 0) {
-        for (const phone of fbData.data) {
-          accounts.push({
-            wabaId: '1413549137402979',
-            phoneId: phone.id,
-            displayName: phone.verified_name || 'ZimHub',
-            displayPhoneNumber: phone.display_phone_number || ''
-          });
-        }
-      }
-    } catch (e) {}
-  }
+  // Removido consulta direta final ao WABA ZimHub (1413549137402979)
 
   if (accounts.length === 0) {
     return { success: false, error: "NO_PHONES_FOUND", metaDebug: { message: 'Nenhum número de telefone encontrado neste portfólio. Registre o número no WhatsApp Manager primeiro.' } };
@@ -371,7 +356,9 @@ export async function connectAndRegisterWhatsApp(
   const isMockMode = process.env.NEXT_PUBLIC_META_MOCK_MODE === 'true';
   const systemUserId = process.env.META_SYSTEM_USER_ID || 'mock_system_user';
 
-  // 1. Cria a conta inicialmente usando supabaseAdmin (evita bloqueio de RLS)
+  await requireOrganizationRole(organizationId, 'admin');
+
+  // 1. Cria a conta inicialmente usando supabaseAdmin (evita bloqueio de RLS) com status PENDING
   const { data: account, error: accountError } = await supabaseAdmin
     .from('whatsapp_accounts')
     .upsert({
@@ -380,9 +367,9 @@ export async function connectAndRegisterWhatsApp(
       phone_number_id: phoneId,
       display_phone_number: displayPhoneNumber,
       display_name: displayName,
-      connection_status: 'CONNECTED',
-      registration_status: 'REGISTERED',
-      system_user_access_status: 'VERIFIED'
+      connection_status: 'PENDING',
+      registration_status: 'UNREGISTERED',
+      system_user_access_status: 'UNVERIFIED'
     }, { onConflict: 'phone_number_id' })
     .select()
     .single();
@@ -400,7 +387,7 @@ export async function connectAndRegisterWhatsApp(
 
   try {
     // 2. ASSIGN SYSTEM USER
-    const assignUrl = `https://graph.facebook.com/v20.0/${wabaId}/assigned_users`;
+    const assignUrl = `https://graph.facebook.com/${graphVersion}/${wabaId}/assigned_users`;
     await fetch(assignUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clientToken}` },
@@ -409,7 +396,7 @@ export async function connectAndRegisterWhatsApp(
     
     // 3. REGISTER PHONE NUMBER (se o usuário informou o PIN de 6 dígitos)
     if (pin && pin.length === 6) {
-      const registerUrl = `https://graph.facebook.com/v20.0/${phoneId}/register`;
+      const registerUrl = `https://graph.facebook.com/${graphVersion}/${phoneId}/register`;
       await fetch(registerUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${operationalToken}` },
@@ -418,14 +405,25 @@ export async function connectAndRegisterWhatsApp(
     }
 
     // 4. SUBSCRIBED APPS
-    const subscribeUrl = `https://graph.facebook.com/v20.0/${wabaId}/subscribed_apps`;
+    const subscribeUrl = `https://graph.facebook.com/${graphVersion}/${wabaId}/subscribed_apps`;
     await fetch(subscribeUrl, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${operationalToken}` }
     }).catch(() => {});
 
+    // Se tudo deu certo, atualizamos para CONNECTED e VERIFIED
+    await supabaseAdmin
+      .from('whatsapp_accounts')
+      .update({
+        connection_status: 'CONNECTED',
+        registration_status: 'REGISTERED',
+        system_user_access_status: 'VERIFIED'
+      })
+      .eq('id', account.id);
+
   } catch (error: any) {
     console.error("Erro secundário na Meta:", error);
+    // Se falhou algo crítico, poderíamos marcar como ERRO, mas deixamos PENDING por enquanto
   }
 
   revalidatePath('/settings');
@@ -445,6 +443,8 @@ export async function connectManualWhatsAppAccount({
   displayName: string;
   displayPhoneNumber: string;
 }) {
+  await requireOrganizationRole(organizationId, 'admin');
+
   const { data: account, error } = await supabaseAdmin
     .from('whatsapp_accounts')
     .upsert({
@@ -470,7 +470,21 @@ export async function connectManualWhatsAppAccount({
 }
 
 export async function disconnectWhatsAppAccount(accountId: string) {
-  // Deleta o registro para sumir completamente do painel
+  // 1. Descobre a qual organização a conta pertence
+  const { data: account } = await supabaseAdmin
+    .from('whatsapp_accounts')
+    .select('organization_id')
+    .eq('id', accountId)
+    .single();
+
+  if (!account) {
+    throw new Error('Conta não encontrada.');
+  }
+
+  // 2. Valida se o usuário autenticado é admin da organização dona da conta
+  await requireOrganizationRole(account.organization_id, 'admin');
+
+  // 3. Deleta o registro para sumir completamente do painel
   const { error } = await supabaseAdmin
     .from('whatsapp_accounts')
     .delete()

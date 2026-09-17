@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast-provider";
 
 const outfit = Outfit({ 
   subsets: ["latin"],
@@ -9,7 +10,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "WaSeller SaaS - CRM para WhatsApp",
+  title: "ZimZAP SaaS - CRM e Automação",
   description: "Plataforma de CRM e automação usando a API Oficial do WhatsApp.",
 };
 
@@ -19,9 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${outfit.variable}`}>
+    <html lang="pt-BR" className={`${outfit.variable} theme-dark`}>
       <body className={outfit.className}>
         {children}
+        <ToastProvider />
       </body>
     </html>
   );
