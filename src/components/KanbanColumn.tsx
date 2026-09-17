@@ -60,7 +60,7 @@ export function KanbanColumn({ id, title, color, contacts }: KanbanColumnProps) 
       </div>
 
       {/* Cards Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', gap: '0.75rem', minHeight: '150px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem', gap: '0.75rem', overflowY: 'auto', minHeight: '150px' }}>
         <SortableContext items={contacts.map((c) => c.id)} strategy={verticalListSortingStrategy}>
           {contacts.map((contact) => (
             <KanbanCard key={contact.id} contact={contact} />

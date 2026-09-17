@@ -202,7 +202,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '2rem', minHeight: 0 }}>
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
           {children}
         </main>
       </div>

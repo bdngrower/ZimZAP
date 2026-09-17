@@ -70,22 +70,36 @@ export function KanbanCard({ contact }: KanbanCardProps) {
         touchAction: 'none' // Previne scroll no mobile durante drag
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: statusColors.text }}></div>
-          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: statusColors.text }}>
-            {contact.status.toUpperCase()}
-          </span>
-        </div>
-        <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span>🕒</span> {timeString}
-        </span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
+        <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+          {contact.name}
+        </h4>
+        <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+          ⋮
+        </button>
       </div>
-      
-      <h4 style={{ margin: '0 0 0.5rem 0' }}>{contact.name}</h4>
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem 0' }}>
         {contact.phone}
       </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <span
+          style={{
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            padding: '4px 8px',
+            background: statusColors.bg,
+            color: statusColors.text,
+            borderRadius: '4px',
+            width: 'fit-content'
+          }}
+        >
+          {contact.status.toUpperCase()}
+        </span>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          Última ativ: {timeString}
+        </span>
+      </div>
     </div>
   );
 }

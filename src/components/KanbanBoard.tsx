@@ -58,10 +58,24 @@ export function KanbanBoard() {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
+    // Drop inválido (fora do board)
     if (!over) return;
 
     const contactId = active.id as string;
-    const newStatus = over.id as string;
+    let newStatus = over.id as string;
+
+    // Verifica se soltou direto na coluna
+    const isColumn = COLUMNS.some((col) => col.id === newStatus);
+    
+    if (!isColumn) {
+      // Se não é coluna, soltou sobre outro card. Pegamos o status desse card alvo.
+      const targetContact = contacts.find((c) => c.id === newStatus);
+      if (targetContact) {
+        newStatus = targetContact.status;
+      } else {
+        return; // Alvo não reconhecido
+      }
+    }
 
     const contact = contacts.find((c) => c.id === contactId);
 

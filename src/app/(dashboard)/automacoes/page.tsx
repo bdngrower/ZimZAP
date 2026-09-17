@@ -8,7 +8,7 @@ import { Plus } from 'lucide-react';
 
 export default function AutomationsPage() {
   return (
-    <div className="flex flex-col h-full animate-fade-in">
+    <div className="flex flex-col flex-1 overflow-hidden h-full animate-fade-in p-6">
       <PageHeader 
         title="Automações" 
         description="Construa fluxos e responda mensagens automaticamente 24/7."

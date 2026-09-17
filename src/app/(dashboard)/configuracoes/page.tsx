@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/ui/page-header';
 
 export default function ConfiguracoesPage() {
   return (
-    <div className="flex flex-col h-full animate-fade-in">
+    <div className="flex flex-col flex-1 overflow-y-auto h-full animate-fade-in p-6">
       <PageHeader 
         title="Configurações da Organização" 
         description="Gerencie os dados, aparência, equipe e integrações do seu negócio."
