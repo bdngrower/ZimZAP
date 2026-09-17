@@ -35,7 +35,9 @@ export async function GET(req: Request) {
         .from('whatsapp_accounts')
         .select('phone_number_id')
         .eq('organization_id', msg.organization_id)
-        .single();
+        .eq('connection_status', 'CONNECTED')
+        .limit(1)
+        .maybeSingle();
 
       if (!account?.phone_number_id) {
         await supabaseAdmin.from('scheduled_messages').update({ status: 'failed', error_message: 'Conta WhatsApp não encontrada' }).eq('id', msg.id);

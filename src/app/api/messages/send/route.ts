@@ -16,13 +16,14 @@ export async function POST(request: Request) {
       return new NextResponse('Server configuration error', { status: 500 });
     }
 
-    // Descobrir o recipientPhoneId associado ao organization_id ou usar o primeiro disponível
     let recipientPhoneId = null;
     if (organization_id) {
       const { data: waAcc } = await supabase
         .from('whatsapp_accounts')
         .select('phone_number_id')
         .eq('organization_id', organization_id)
+        .eq('connection_status', 'CONNECTED')
+        .limit(1)
         .maybeSingle();
       if (waAcc) recipientPhoneId = waAcc.phone_number_id;
     }
