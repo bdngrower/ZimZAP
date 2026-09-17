@@ -8,11 +8,8 @@ import { createClient } from '@/utils/supabase/client';
 import { useCRMStore } from '@/store/useCRMStore';
 
 const MAIN_MODULES = [
-  { id: 'conversas', label: 'Conversas', icon: MessageSquare, href: '/conversas' },
   { id: 'crm', label: 'CRM', icon: LayoutDashboard, href: '/crm' },
   { id: 'automacoes', label: 'Automações', icon: Zap, href: '/automacoes' },
-  { id: 'campanhas', label: 'Campanhas', icon: Send, href: '/campanhas' },
-  { id: 'agenda', label: 'Agenda', icon: Calendar, href: '/agenda' }
 ];
 
 const BOTTOM_MODULES = [
@@ -21,21 +18,10 @@ const BOTTOM_MODULES = [
 
 const MODULE_SUBSECTIONS: Record<string, { label: string; href: string }[]> = {
   'configuracoes': [
-    { label: 'Empresa', href: '/configuracoes' },
-    { label: 'Aparência', href: '/configuracoes/aparencia' },
-    { label: 'WhatsApp', href: '/configuracoes/whatsapp' },
-    { label: 'Integrações', href: '/configuracoes/integracoes' },
-    { label: 'Equipe', href: '/configuracoes/equipe' },
+    { label: 'Geral', href: '/configuracoes' },
   ],
   'crm': [
     { label: 'Pipeline', href: '/crm' },
-    { label: 'Contatos', href: '/crm/contatos' },
-    { label: 'Etiquetas', href: '/crm/etiquetas' }
-  ],
-  'campanhas': [
-    { label: 'Envios', href: '/campanhas' },
-    { label: 'Agendados', href: '/campanhas/agendados' },
-    { label: 'Histórico', href: '/campanhas/historico' }
   ]
 };
 
@@ -204,9 +190,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {/* Contexto da Organização */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'var(--brand-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>MN</span>
+                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>ZZ</span>
               </div>
-              <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>Meu Negócio</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>ZimZAP</span>
             </div>
           </div>
         </header>

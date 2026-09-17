@@ -250,16 +250,7 @@ export function CardModal() {
           >
             Chat API
           </button>
-          <button
-            style={{
-              flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: 'white',
-              borderBottom: activeTab === 'perfil' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-              cursor: 'pointer', opacity: activeTab === 'perfil' ? 1 : 0.6
-            }}
-            onClick={() => setActiveTab('perfil')}
-          >
-            Perfil & Tags
-          </button>
+
           <button
             style={{
               flex: 1, padding: '1rem', background: 'transparent', border: 'none', color: 'white',
@@ -333,26 +324,7 @@ export function CardModal() {
             </div>
           )}
 
-          {activeTab === 'perfil' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Nome do Cliente</label>
-                <input type="text" className="input" defaultValue={contact.name} style={{ width: '100%' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Tags e Etiquetas</label>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <span style={{ padding: '4px 12px', background: 'var(--bg-tertiary)', borderRadius: '12px', fontSize: '0.85rem' }}>VIP</span>
-                  <span style={{ padding: '4px 12px', background: 'var(--bg-tertiary)', borderRadius: '12px', fontSize: '0.85rem' }}>B2B</span>
-                  <button className="btn btn-glass" style={{ padding: '4px 12px', borderRadius: '12px', fontSize: '0.85rem' }}>+ Adicionar Tag</button>
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Anotações</label>
-                <textarea className="input" rows={4} style={{ width: '100%', resize: 'none' }} placeholder="Adicione notas sobre essa negociação..."></textarea>
-              </div>
-            </div>
-          )}
+
 
           {activeTab === 'agendamento' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

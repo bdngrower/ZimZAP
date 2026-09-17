@@ -287,7 +287,7 @@ export function Settings() {
         <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Gerencie integrações, webhooks e contas WhatsApp.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '800px' }}>
         
         {/* WhatsApp Accounts */}
         <div className="glass-card" style={{ padding: '2rem' }}>
@@ -343,70 +343,8 @@ export function Settings() {
           </div>
         </div>
 
-        {/* Webhooks */}
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <h3 style={{ margin: '0 0 1.5rem 0' }}>Webhooks Externos</h3>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Envie dados para o Typebot, N8N ou Make quando um novo cliente chegar.</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>URL do Webhook</label>
-              <input type="text" className="input" style={{ width: '100%' }} placeholder="https://hook.us1.make.com/..." />
-            </div>
-            <button className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Salvar Webhook</button>
-          </div>
-        </div>
-
       </div>
-      
-      {/* Calendar Connections - Added Below Grid */}
-      <div style={{ marginTop: '2rem' }}>
-        <div className="glass-card" style={{ padding: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: 'var(--accent-primary)' }}>📅</span> Integrações de Calendário
-            </h3>
-          </div>
-          
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Conecte sua agenda para permitir que o robô agende compromissos automaticamente via WhatsApp.
-          </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Google Calendar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)' }}>
-              <div>
-                <h4 style={{ margin: '0 0 0.3rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21.5 12.5a9.5 9.5 0 1 1-2.8-6.7l-2.6 2.6a5.8 5.8 0 1 0 1.6 4.1h-5.8v-3.7h9.6c.1.6.1 1.2.1 1.8z"/></svg>
-                  Google Calendar
-                </h4>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Não conectado</p>
-              </div>
-              <button 
-                className="btn btn-primary" 
-                style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} 
-                onClick={() => {
-                  if (!currentOrganizationId) return alert('Selecione uma organização');
-                  window.location.href = `/api/auth/google?organization_id=${currentOrganizationId}`;
-                }}
-              >
-                Conectar
-              </button>
-            </div>
-
-            {/* Microsoft 365 */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: 'var(--radius-sm)' }}>
-              <div>
-                <h4 style={{ margin: '0 0 0.3rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20M2 2h9v9H2V2zm11 0h9v9h-9V2zM2 13h9v9H2v-9zm11 0h9v9h-9v-9z"/></svg>
-                  Microsoft 365 / Outlook
-                </h4>
-                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Não conectado</p>
-              </div>
-              <button className="btn btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => alert('Em breve! (Requer configuração no Azure Portal)')}>Conectar</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Modal Picker de Múltiplos Números (Passo 1) */}
       {availablePhones.length > 0 && !selectedPhoneForPin && (

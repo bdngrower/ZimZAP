@@ -12,12 +12,7 @@ export default function AutomationsPage() {
       <PageHeader 
         title="Automações" 
         description="Construa fluxos e responda mensagens automaticamente 24/7."
-      >
-        <Button variant="primary">
-          <Plus size={18} />
-          Novo Fluxo
-        </Button>
-      </PageHeader>
+      />
       
       <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <AutomationsBoard />

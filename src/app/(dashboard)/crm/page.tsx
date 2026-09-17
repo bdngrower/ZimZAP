@@ -12,12 +12,7 @@ export default function CRMPage() {
       <PageHeader 
         title="Pipeline CRM" 
         description="Gerencie o progresso e o atendimento de cada contato."
-      >
-        <Button variant="primary">
-          <Plus size={18} />
-          Novo Contato
-        </Button>
-      </PageHeader>
+      />
       
       <div className="flex-1 overflow-hidden" style={{ minHeight: 0 }}>
         <KanbanBoard />

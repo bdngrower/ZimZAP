@@ -75,12 +75,7 @@ export function KanbanBoard() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Test Controls */}
-      <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={addMockContact} className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>
-          + Adicionar Lead Fake (Supabase)
-        </button>
-      </div>
+      {/* Test Controls Removido para produção */}
 
       <DndContext
         sensors={sensors}
