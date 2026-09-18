@@ -7,6 +7,7 @@ import ReactFlow, {
   applyEdgeChanges, 
   Background, 
   Controls,
+  MiniMap,
   Connection,
   Edge,
   Node,
@@ -208,87 +209,82 @@ export function AutomationsBoard() {
   return (
     <div style={{ display: 'flex', gap: '1rem', height: '100%', padding: '1rem', boxSizing: 'border-box' }}>
       
-      {/* Left Sidebar: Flows List */}
-      <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+      {/* Left Sidebar: Palette & Flow List combined */}
+      <div style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Meus Fluxos</h3>
-          <button className="btn btn-primary" onClick={createFlow} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>+ Novo</button>
+          <h3 style={{ margin: 0, fontSize: '1rem' }}>Meus Fluxos</h3>
+          <button className="btn btn-primary" onClick={createFlow} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}>+ Novo</button>
+        </div>
+
+        <select 
+          className="input"
+          style={{ width: '100%', fontSize: '0.85rem', padding: '0.4rem' }}
+          value={activeFlow?.id || ''}
+          onChange={(e) => setActiveFlow(flows.find(f => f.id === e.target.value))}
+        >
+          {flows.map(f => (
+            <option key={f.id} value={f.id}>{f.name}</option>
+          ))}
+        </select>
+
+        {activeFlow && (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); deleteFlow(activeFlow.id); }}
+              style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: 0, fontSize: '0.8rem' }}
+              title="Apagar Fluxo"
+            >🗑️ Excluir Fluxo</button>
+            <div 
+              onClick={(e) => { e.stopPropagation(); toggleFlow(activeFlow); }}
+              style={{ width: '36px', height: '20px', borderRadius: '10px', background: activeFlow.active ? 'var(--success)' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer' }}
+              title={activeFlow.active ? "Desativar fluxo" : "Ativar fluxo"}
+            >
+              <div style={{ width: '16px', height: '16px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: activeFlow.active ? '18px' : '2px', transition: 'left 0.2s' }}></div>
+            </div>
+          </div>
+        )}
+
+        <hr style={{ borderColor: 'rgba(255,255,255,0.05)', margin: '0' }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Componentes</h4>
+          <button 
+            className="btn btn-primary" 
+            style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+            onClick={saveFlowData}
+            disabled={saving}
+          >
+            {saving ? 'Salvando...' : '💾 Salvar'}
+          </button>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto' }}>
-          {flows.length === 0 && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Nenhum fluxo criado.</p>}
-          {flows.map(flow => (
+          {nodeTypesList.map((nt) => (
             <div 
-              key={flow.id} 
-              onClick={() => setActiveFlow(flow)}
-              className="glass-card" 
-              style={{ 
-                padding: '1rem', cursor: 'pointer', 
-                border: activeFlow?.id === flow.id ? '1px solid var(--accent-primary)' : '1px solid rgba(255,255,255,0.05)',
-                display: 'flex', flexDirection: 'column', gap: '0.5rem'
+              key={nt.type}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('application/reactflow', nt.type);
+                e.dataTransfer.effectAllowed = 'move';
               }}
+              style={{ 
+                padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.05)', 
+                borderRadius: 'var(--radius-sm)', cursor: 'grab', fontSize: '0.85rem',
+                border: '1px solid rgba(255,255,255,0.05)'
+              }}
+              className="hover:bg-white/10 transition-colors"
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{flow.name}</h4>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); deleteFlow(flow.id); }}
-                    style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: 0 }}
-                    title="Apagar Fluxo"
-                  >🗑️</button>
-                  <div 
-                    onClick={(e) => { e.stopPropagation(); toggleFlow(flow); }}
-                    style={{ width: '36px', height: '20px', borderRadius: '10px', background: flow.active ? 'var(--success)' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer' }}
-                    title={flow.active ? "Desativar fluxo" : "Ativar fluxo"}
-                  >
-                    <div style={{ width: '16px', height: '16px', background: 'white', borderRadius: '50%', position: 'absolute', top: '2px', left: flow.active ? '18px' : '2px', transition: 'left 0.2s' }}></div>
-                  </div>
-                </div>
-              </div>
+              {nt.label}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Main Area: React Flow Canvas */}
       {activeFlow ? (
         <div style={{ flex: 1, display: 'flex', gap: '1rem', overflow: 'hidden' }}>
           
-          {/* Node Palette */}
-          <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
-            <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Arraste para o quadro</h4>
-            
-            <button 
-              className="btn btn-primary" 
-              style={{ width: '100%', marginBottom: '0.5rem' }}
-              onClick={saveFlowData}
-              disabled={saving}
-            >
-              {saving ? 'Salvando...' : '💾 Salvar Fluxo'}
-            </button>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto' }}>
-              {nodeTypesList.map((nt) => (
-                <div 
-                  key={nt.type}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('application/reactflow', nt.type);
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                  style={{ 
-                    padding: '0.8rem', background: 'rgba(255,255,255,0.1)', 
-                    borderRadius: 'var(--radius-sm)', cursor: 'grab', fontSize: '0.85rem' 
-                  }}
-                >
-                  {nt.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* React Flow Container */}
-          <div className="glass-panel" style={{ flex: 1, position: 'relative' }} ref={reactFlowWrapper}>
+          <div className="glass-panel" style={{ flex: 1, position: 'relative', overflow: 'hidden', padding: 0 }} ref={reactFlowWrapper}>
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -301,115 +297,125 @@ export function AutomationsBoard() {
               onNodeClick={onNodeClick}
               onPaneClick={() => setSelectedNode(null)}
               nodeTypes={nodeTypes}
+              defaultEdgeOptions={{ type: 'smoothstep', style: { strokeWidth: 2, stroke: '#8b5cf6' } }}
               fitView
             >
-              <Background color="#ccc" gap={16} />
-              <Controls />
+              <Background color="#555" gap={16} variant="dots" size={1} />
+              <Controls position="bottom-left" />
+              <MiniMap 
+                nodeStrokeColor="#000" 
+                nodeColor="#222" 
+                maskColor="rgba(0,0,0,0.2)"
+                position="bottom-right" 
+                style={{ background: '#111', border: '1px solid #333' }}
+              />
             </ReactFlow>
-
-            {/* Node Editor Modal/Panel */}
-            {selectedNode && (
-              <div style={{ 
-                position: 'absolute', top: '1rem', right: '1rem', width: '300px', 
-                background: 'rgba(20,20,20,0.95)', backdropFilter: 'blur(10px)',
-                borderRadius: 'var(--radius-md)', padding: '1.5rem',
-                border: '1px solid rgba(255,255,255,0.1)', zIndex: 10
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h4 style={{ margin: 0 }}>Editar Nó</h4>
-                  <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>✕</button>
-                </div>
-                
-                <p style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', color: 'var(--accent-primary)' }}>
-                  {nodeTypesList.find(n => n.type === selectedNode.data.type)?.label}
-                </p>
-
-                <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
-                  {selectedNode.data.type === 'add_tag' ? 'Nome da Tag:' : 
-                   selectedNode.data.type === 'schedule_appointment' ? 'Mensagem de Apresentação (ex: Escolha um horário):' : 
-                   'Conteúdo da Mensagem/Pergunta:'}
-                </label>
-                <textarea 
-                  className="input" 
-                  rows={4} 
-                  style={{ width: '100%', resize: 'none' }}
-                  value={selectedNode.data.content || ''}
-                  onChange={(e) => updateSelectedNodeContent(e.target.value)}
-                  placeholder="Escreva aqui..."
-                ></textarea>
-
-                {selectedNode.data.type === 'schedule_appointment' && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
-                      Duração do Compromisso:
-                    </label>
-                    <select 
-                      className="input" 
-                      style={{ width: '100%', padding: '0.4rem', fontSize: '0.85rem' }}
-                      value={selectedNode.data.duration || '30 min'}
-                      onChange={(e) => {
-                        const updatedNode = { ...selectedNode, data: { ...selectedNode.data, duration: e.target.value } };
-                        setSelectedNode(updatedNode);
-                        setNodes(nds => nds.map(n => n.id === updatedNode.id ? updatedNode : n));
-                      }}
-                    >
-                      <option value="15 min">15 min</option>
-                      <option value="30 min">30 min</option>
-                      <option value="45 min">45 min</option>
-                      <option value="1 hora">1 hora</option>
-                    </select>
-                  </div>
-                )}
-
-                {selectedNode.data.type === 'offer_choices' && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
-                      Opções:
-                    </label>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {selectedNode.data.options?.map((opt: string, idx: number) => (
-                        <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
-                          <input 
-                            className="input" 
-                            style={{ flex: 1, padding: '0.4rem', fontSize: '0.85rem' }}
-                            value={opt}
-                            onChange={(e) => {
-                              const newOpts = [...(selectedNode.data.options || [])];
-                              newOpts[idx] = e.target.value;
-                              updateSelectedNodeOptions(newOpts);
-                            }}
-                          />
-                          <button 
-                            onClick={() => {
-                              const newOpts = [...(selectedNode.data.options || [])];
-                              newOpts.splice(idx, 1);
-                              updateSelectedNodeOptions(newOpts);
-                            }}
-                            style={{ background: 'rgba(255,0,0,0.2)', border: 'none', color: 'var(--danger)', borderRadius: '4px', cursor: 'pointer', padding: '0 0.5rem' }}
-                          >✕</button>
-                        </div>
-                      ))}
-                    </div>
-                    <button 
-                      onClick={() => updateSelectedNodeOptions([...(selectedNode.data.options || []), 'Nova Opção'])}
-                      style={{ background: 'rgba(255,255,255,0.1)', border: '1px dashed rgba(255,255,255,0.3)', color: 'white', padding: '0.5rem', width: '100%', marginTop: '0.5rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
-                    >
-                      + Adicionar Opção
-                    </button>
-                  </div>
-                )}
-                
-                <button 
-                  className="btn" 
-                  style={{ width: '100%', marginTop: '1rem', background: 'var(--danger)' }}
-                  onClick={deleteSelectedNode}
-                >
-                  Excluir este nó
-                </button>
-              </div>
-            )}
           </div>
 
+          {/* Right Sidebar: Properties Panel */}
+          {selectedNode && (
+            <div style={{ 
+              width: '320px', 
+              background: 'rgba(0,0,0,0.2)', 
+              borderRadius: 'var(--radius-md)', 
+              padding: '1.5rem',
+              border: '1px solid rgba(255,255,255,0.1)',
+              overflowY: 'auto'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem' }}>Propriedades</h4>
+                <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
+              </div>
+              
+              <p style={{ margin: '0 0 1.5rem 0', fontSize: '0.85rem', color: 'var(--brand-primary)', fontWeight: 600 }}>
+                {nodeTypesList.find(n => n.type === selectedNode.data.type)?.label}
+              </p>
+
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
+                {selectedNode.data.type === 'add_tag' ? 'Nome da Tag:' : 
+                 selectedNode.data.type === 'schedule_appointment' ? 'Mensagem de Apresentação (ex: Escolha um horário):' : 
+                 'Conteúdo da Mensagem/Pergunta:'}
+              </label>
+              <textarea 
+                className="input" 
+                rows={4} 
+                style={{ width: '100%', resize: 'vertical' }}
+                value={selectedNode.data.content || ''}
+                onChange={(e) => updateSelectedNodeContent(e.target.value)}
+                placeholder="Escreva aqui..."
+              ></textarea>
+
+              {selectedNode.data.type === 'schedule_appointment' && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
+                    Duração do Compromisso:
+                  </label>
+                  <select 
+                    className="input" 
+                    style={{ width: '100%', padding: '0.5rem', fontSize: '0.85rem' }}
+                    value={selectedNode.data.duration || '30 min'}
+                    onChange={(e) => {
+                      const updatedNode = { ...selectedNode, data: { ...selectedNode.data, duration: e.target.value } };
+                      setSelectedNode(updatedNode);
+                      setNodes(nds => nds.map(n => n.id === updatedNode.id ? updatedNode : n));
+                    }}
+                  >
+                    <option value="15 min">15 min</option>
+                    <option value="30 min">30 min</option>
+                    <option value="45 min">45 min</option>
+                    <option value="1 hora">1 hora</option>
+                  </select>
+                </div>
+              )}
+
+              {selectedNode.data.type === 'offer_choices' && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem' }}>
+                    Opções:
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {selectedNode.data.options?.map((opt: string, idx: number) => (
+                      <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input 
+                          className="input" 
+                          style={{ flex: 1, padding: '0.4rem', fontSize: '0.85rem' }}
+                          value={opt}
+                          onChange={(e) => {
+                            const newOpts = [...(selectedNode.data.options || [])];
+                            newOpts[idx] = e.target.value;
+                            updateSelectedNodeOptions(newOpts);
+                          }}
+                        />
+                        <button 
+                          onClick={() => {
+                            const newOpts = [...(selectedNode.data.options || [])];
+                            newOpts.splice(idx, 1);
+                            updateSelectedNodeOptions(newOpts);
+                          }}
+                          style={{ background: 'rgba(255,0,0,0.1)', border: 'none', color: 'var(--danger)', borderRadius: '4px', cursor: 'pointer', padding: '0 0.5rem' }}
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                  <button 
+                    onClick={() => updateSelectedNodeOptions([...(selectedNode.data.options || []), 'Nova Opção'])}
+                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)', color: 'white', padding: '0.5rem', width: '100%', marginTop: '0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}
+                    className="hover:bg-white/10 transition-colors"
+                  >
+                    + Adicionar Opção
+                  </button>
+                </div>
+              )}
+              
+              <button 
+                className="btn" 
+                style={{ width: '100%', marginTop: '2rem', background: 'rgba(220, 38, 38, 0.1)', border: '1px solid rgba(220, 38, 38, 0.3)', color: 'var(--danger)' }}
+                onClick={deleteSelectedNode}
+              >
+                Excluir Nó
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
