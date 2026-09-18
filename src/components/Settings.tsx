@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useCRMStore } from '@/store/useCRMStore';
 import { getWhatsAppAccounts, fetchMetaPhonesFromCode, connectAndRegisterWhatsApp, disconnectWhatsAppAccount } from '@/app/actions/whatsapp';
+import { toast } from 'sonner';
 
 // Tipagem global para o SDK do Facebook
 declare global {
@@ -93,7 +94,11 @@ export function Settings() {
   };
 
   const handleConnect = () => {
-    if (!currentOrganizationId) return;
+    const orgId = useCRMStore.getState().currentOrganizationId;
+    if (!orgId) {
+      toast.error('Sem organização selecionada');
+      return;
+    }
     
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
     const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
@@ -106,12 +111,12 @@ export function Settings() {
     }
 
     if (!appId || !configId) {
-      alert("Erro de Configuração: NEXT_PUBLIC_META_APP_ID ou CONFIG_ID estão ausentes no ambiente.");
+      toast.error('Erro de Configuração', { description: 'NEXT_PUBLIC_META_APP_ID ou CONFIG_ID estão ausentes no ambiente.' });
       return;
     }
 
     if (!window.FB) {
-      alert("Erro: SDK do Facebook não carregado.");
+      toast.error('Erro', { description: 'SDK do Facebook não carregado.' });
       return;
     }
     
@@ -161,7 +166,7 @@ export function Settings() {
             const captured = oauthRedirectUriRef.current;
             if (!captured) {
               console.error("OAUTH_REDIRECT_URI_NOT_CAPTURED: Interceptação do window.open falhou.");
-              alert("Falha de segurança na captura da URI. Tente novamente.");
+              toast.error('Falha de segurança na captura da URI. Tente novamente.');
               return;
             }
             processMetaCallback({ 
@@ -202,7 +207,9 @@ export function Settings() {
       if (result.success === false) {
         const dbg = result.metaDebug as any;
         console.error("Meta API Error:", dbg);
-        alert(`Ocorreu um erro na autenticação Oauth da Meta.\n\nStatus: ${dbg?.status}\nMensagem: ${dbg?.error || dbg?.message}\n\nAbra o console para ver o log completo (fbtrace_id, etc).`);
+        toast.error('Erro na autenticação OAuth', { 
+          description: `Status: ${dbg?.status}. ${dbg?.error || dbg?.message}` 
+        });
         setLoading(false);
         return;
       }
@@ -222,14 +229,14 @@ export function Settings() {
       }
     } catch (e) {
       console.error(e);
-      alert(e instanceof Error ? e.message : 'Falha ao buscar números autorizados pela Meta.');
+      toast.error(e instanceof Error ? e.message : 'Falha ao buscar números autorizados pela Meta.');
       setLoading(false);
     }
   };
 
   const submitConnection = async () => {
     if (!pin || pin.length !== 6) {
-      alert("Por favor, digite o PIN de exatos 6 dígitos criado no Facebook.");
+      toast.error('Por favor, digite o PIN de exatos 6 dígitos criado no Facebook.');
       return;
     }
     setLoading(true);
@@ -245,7 +252,7 @@ export function Settings() {
       );
       
       if (res && (res as any).success === false) {
-        alert(`Erro ao registrar WhatsApp:\n\n${(res as any).error}`);
+        toast.error('Erro ao registrar WhatsApp', { description: (res as any).error });
         setLoading(false);
         return;
       }
@@ -257,9 +264,10 @@ export function Settings() {
       setPin('');
       
       await loadAccounts();
+      toast.success('WhatsApp registrado com sucesso!');
     } catch (e) {
       console.error(e);
-      alert(e instanceof Error ? e.message : 'Falha ao registrar e conectar a conta de WhatsApp.');
+      toast.error(e instanceof Error ? e.message : 'Falha ao registrar e conectar a conta de WhatsApp.');
       setLoading(false);
     }
   };
@@ -267,14 +275,14 @@ export function Settings() {
 
 
   const handleDisconnect = async (id: string) => {
-    if (!confirm("Deseja realmente desconectar e remover esta conta?")) return;
     setLoading(true);
     try {
       await disconnectWhatsAppAccount(id);
       await loadAccounts();
+      toast.success('Conta desconectada com sucesso.');
     } catch (e: any) {
       console.error(e);
-      alert(e.message || "Erro ao desconectar conta.");
+      toast.error(e.message || "Erro ao desconectar conta.");
       setLoading(false);
     }
   };

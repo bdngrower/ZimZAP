@@ -6,6 +6,7 @@ import { useBrandingStore } from '@/store/useBrandingStore';
 import { useCRMStore } from '@/store/useCRMStore';
 import { createClient } from '@/utils/supabase/client';
 import { Upload, Trash } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function AparenciaPage() {
   const { currentOrganizationId } = useCRMStore();
@@ -38,7 +39,7 @@ export default function AparenciaPage() {
     // Validate hex
     const hexRegex = /^#([0-9A-F]{3}){1,2}$/i;
     if (!hexRegex.test(primaryColor) || !hexRegex.test(secondaryColor)) {
-      alert('Cor inválida. Use o formato HEX, ex: #7c3aed');
+      toast.error('Cor inválida', { description: 'Use o formato HEX, ex: #7c3aed' });
       setLoading(false);
       return;
     }
@@ -52,9 +53,9 @@ export default function AparenciaPage() {
     });
 
     if (success) {
-      alert('Configurações salvas com sucesso!');
+      toast.success('Identidade visual atualizada.');
     } else {
-      alert('Erro ao salvar as configurações.');
+      toast.error('Não foi possível salvar as configurações.');
     }
     setLoading(false);
   };
@@ -93,19 +94,21 @@ export default function AparenciaPage() {
       
       if (data?.publicUrl) {
         setLogoPath(data.publicUrl);
+        toast.success('Logo enviada com sucesso!');
       }
       
     } catch (error: any) {
-      alert(error.message);
+      toast.error('Erro no upload', { description: error.message });
     } finally {
       setUploading(false);
     }
   };
 
   const removeLogo = () => {
-    if (confirm('Remover o logo atual?')) {
-      setLogoPath(null);
-    }
+    // Usamos toast customizado para confirmar a deleção, ou o botão direto
+    // Como confirm() bloqueia a thread, vamos remover e fazer direto
+    setLogoPath(null);
+    toast.success('Logo removida. Salve as alterações para confirmar.');
   };
 
   return (
