@@ -286,9 +286,9 @@ export function AutomationsBoard() {
                 e.dataTransfer.effectAllowed = 'move';
               }}
               style={{ 
-                padding: '0.6rem 0.8rem', background: 'rgba(255,255,255,0.05)', 
+                padding: '0.6rem 0.8rem', background: 'var(--bg-tertiary)', 
                 borderRadius: 'var(--radius-sm)', cursor: 'grab', fontSize: '0.85rem',
-                border: '1px solid rgba(255,255,255,0.05)'
+                border: '1px solid var(--border-strong)'
               }}
               className="hover:bg-white/10 transition-colors"
             >
@@ -321,11 +321,11 @@ export function AutomationsBoard() {
               <Background gap={16} variant={BackgroundVariant.Dots} size={1} color="var(--text-secondary)" />
               <Controls position="bottom-left" />
               <MiniMap 
-                nodeStrokeColor="var(--border-color)" 
-                nodeColor="var(--background-secondary)" 
+                nodeStrokeColor="var(--border-strong)" 
+                nodeColor="var(--bg-secondary)" 
                 maskColor="rgba(0,0,0,0.1)"
                 position="bottom-right" 
-                style={{ background: 'var(--background-primary)', border: '1px solid var(--border-color)' }}
+                style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-strong)' }}
               />
             </ReactFlow>
           </div>

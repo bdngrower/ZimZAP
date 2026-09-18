@@ -22,8 +22,8 @@ export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
             <div 
               key={index}
               style={{
-                background: 'var(--background-primary, #ffffff)',
-                border: '1px solid var(--border-color, rgba(0,0,0,0.1))',
+                background: 'var(--bg-primary, #18181b)',
+                border: '1px solid var(--border-strong, rgba(255,255,255,0.1))',
                 padding: '6px 24px 6px 10px',
                 borderRadius: '4px',
                 fontSize: '0.8rem',
@@ -44,7 +44,7 @@ export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
                 style={{
                   width: 12,
                   height: 12,
-                  background: 'var(--background-primary)',
+                  background: 'var(--bg-primary)',
                   border: '2px solid #f97316',
                   right: -6,
                   top: '50%',
@@ -85,7 +85,7 @@ export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
             style={{
               width: 12,
               height: 12,
-              background: 'var(--background-primary)',
+              background: 'var(--bg-primary)',
               border: '2px solid var(--danger)',
               right: -6,
               top: '50%',

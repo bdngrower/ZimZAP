@@ -30,8 +30,8 @@ export function BaseNode({
       style={{
         width: 260,
         minHeight: 80,
-        border: selected ? `1px solid ${color}` : '1px solid var(--border-color, rgba(0,0,0,0.1))',
-        backgroundColor: 'var(--background-secondary, #ffffff)',
+        border: selected ? `1px solid ${color}` : '1px solid var(--border-strong, rgba(255,255,255,0.1))',
+        backgroundColor: 'var(--bg-secondary, #18181b)',
         boxShadow: selected ? `0 0 0 2px ${color}40, 0 8px 16px rgba(0,0,0,0.1)` : '0 4px 6px rgba(0,0,0,0.05)',
         opacity: 0.95,
       }}
@@ -43,8 +43,8 @@ export function BaseNode({
           alignItems: 'center',
           gap: '8px',
           padding: '10px 12px',
-          background: 'var(--background-tertiary, rgba(0,0,0,0.05))',
-          borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.1))'
+          background: 'var(--bg-tertiary, rgba(0,0,0,0.2))',
+          borderBottom: '1px solid var(--border-strong, rgba(255,255,255,0.05))'
         }}
       >
         <div style={{
@@ -83,7 +83,7 @@ export function BaseNode({
           style={{
             width: 12,
             height: 12,
-            background: 'var(--background-primary)',
+            background: 'var(--bg-primary)',
             border: `2px solid ${color}`,
             left: -6,
             top: 22, // align with header vertically
@@ -99,7 +99,7 @@ export function BaseNode({
           style={{
             width: 12,
             height: 12,
-            background: 'var(--background-primary)',
+            background: 'var(--bg-primary)',
             border: `2px solid ${color}`,
             right: -6,
             top: 22,
