@@ -282,11 +282,6 @@ export function Settings() {
   return (
     <div className="glass-panel" style={{ flex: 1, padding: '2rem', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ margin: '0 0 0.5rem 0' }}>Configurações</h2>
-        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Gerencie integrações, webhooks e contas WhatsApp.</p>
-      </div>
-
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: '800px' }}>
         
         {/* WhatsApp Accounts */}

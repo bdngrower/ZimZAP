@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { MessageSquare, LayoutDashboard, Zap, Send, Calendar, Settings, LogOut, User, Menu } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useCRMStore } from '@/store/useCRMStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
+import { OrganizationBrandingProvider } from '@/components/OrganizationBrandingProvider';
 
 const MAIN_MODULES = [
   { id: 'crm', label: 'CRM', icon: LayoutDashboard, href: '/crm' },
@@ -18,7 +20,8 @@ const BOTTOM_MODULES = [
 
 const MODULE_SUBSECTIONS: Record<string, { label: string; href: string }[]> = {
   'configuracoes': [
-    { label: 'Geral', href: '/configuracoes' },
+    { label: 'Aparência', href: '/configuracoes/aparencia' },
+    { label: 'WhatsApp', href: '/configuracoes/whatsapp' },
   ],
   'crm': [
     { label: 'Pipeline', href: '/crm' },
@@ -30,6 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const supabase = createClient();
   const { currentOrganizationId, fetchUserOrganization } = useCRMStore();
+  const { branding } = useBrandingStore();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -55,10 +59,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'transparent' }}>
-      
-      {/* Tier 1: Main Sidebar (Narrow) */}
-      <aside 
+    <OrganizationBrandingProvider>
+      <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'transparent' }}>
+        
+        {/* Tier 1: Main Sidebar (Narrow) */}
+        <aside 
         style={{
           width: '68px',
           backgroundColor: 'var(--surface-glass)',
@@ -72,8 +77,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         }}
         className="hidden md:flex"
       >
-        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--brand-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
-          <Zap size={20} color="white" />
+        <div style={{ width: '40px', height: '40px', borderRadius: '8px', background: 'var(--brand-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem', overflow: 'hidden' }}>
+          {branding?.logo_path ? (
+            <img src={branding.logo_path} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <Zap size={20} color="white" />
+          )}
         </div>
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, width: '100%', alignItems: 'center' }}>
@@ -193,10 +202,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {/* Contexto da Organização */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'var(--brand-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>ZZ</span>
+              <div style={{ width: '24px', height: '24px', borderRadius: '4px', background: 'var(--brand-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                {branding?.logo_path ? (
+                  <img src={branding.logo_path} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '10px', fontWeight: 'bold', color: 'white' }}>
+                    {branding?.display_name ? branding.display_name.substring(0, 2).toUpperCase() : 'ZZ'}
+                  </span>
+                )}
               </div>
-              <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>ZimZAP</span>
+              <span style={{ fontSize: '0.95rem', fontWeight: 500 }}>
+                {branding?.display_name || 'ZimZAP'}
+              </span>
             </div>
           </div>
         </header>
@@ -208,5 +225,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
     </div>
+    </OrganizationBrandingProvider>
   );
 }
