@@ -22,8 +22,8 @@ export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
             <div 
               key={index}
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'var(--background-primary, #ffffff)',
+                border: '1px solid var(--border-color, rgba(0,0,0,0.1))',
                 padding: '6px 24px 6px 10px',
                 borderRadius: '4px',
                 fontSize: '0.8rem',
@@ -62,8 +62,8 @@ export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
         {/* Fallback Handle */}
         <div 
           style={{
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px dashed rgba(239, 68, 68, 0.3)',
+            background: 'rgba(239, 68, 68, 0.05)',
+            border: '1px dashed rgba(239, 68, 68, 0.4)',
             padding: '6px 24px 6px 10px',
             borderRadius: '4px',
             fontSize: '0.75rem',

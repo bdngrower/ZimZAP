@@ -76,7 +76,14 @@ export function AutomationsBoard() {
   useEffect(() => {
     if (activeFlow) {
       if (activeFlow.flow_data && activeFlow.flow_data.nodes) {
-        setNodes(activeFlow.flow_data.nodes || []);
+        // Correção on-the-fly para nós antigos que tinham type='default'
+        const mappedNodes = activeFlow.flow_data.nodes.map((n: any) => {
+          if (n.type === 'default' && n.data?.type) {
+            return { ...n, type: n.data.type };
+          }
+          return n;
+        });
+        setNodes(mappedNodes || []);
         setEdges(activeFlow.flow_data.edges || []);
       } else {
         setNodes([]);
@@ -311,14 +318,14 @@ export function AutomationsBoard() {
               defaultEdgeOptions={{ type: 'smoothstep', style: { strokeWidth: 2, stroke: '#8b5cf6' } }}
               fitView
             >
-              <Background color="#555" gap={16} variant={BackgroundVariant.Dots} size={1} />
+              <Background gap={16} variant={BackgroundVariant.Dots} size={1} color="var(--text-secondary)" />
               <Controls position="bottom-left" />
               <MiniMap 
-                nodeStrokeColor="#000" 
-                nodeColor="#222" 
-                maskColor="rgba(0,0,0,0.2)"
+                nodeStrokeColor="var(--border-color)" 
+                nodeColor="var(--background-secondary)" 
+                maskColor="rgba(0,0,0,0.1)"
                 position="bottom-right" 
-                style={{ background: '#111', border: '1px solid #333' }}
+                style={{ background: 'var(--background-primary)', border: '1px solid var(--border-color)' }}
               />
             </ReactFlow>
           </div>

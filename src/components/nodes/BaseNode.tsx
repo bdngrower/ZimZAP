@@ -30,9 +30,9 @@ export function BaseNode({
       style={{
         width: 260,
         minHeight: 80,
-        border: selected ? `1px solid ${color}` : '1px solid rgba(255,255,255,0.1)',
-        backgroundColor: 'var(--background-secondary)',
-        boxShadow: selected ? `0 0 0 2px ${color}40, 0 8px 16px rgba(0,0,0,0.4)` : '0 4px 6px rgba(0,0,0,0.2)',
+        border: selected ? `1px solid ${color}` : '1px solid var(--border-color, rgba(0,0,0,0.1))',
+        backgroundColor: 'var(--background-secondary, #ffffff)',
+        boxShadow: selected ? `0 0 0 2px ${color}40, 0 8px 16px rgba(0,0,0,0.1)` : '0 4px 6px rgba(0,0,0,0.05)',
         opacity: 0.95,
       }}
     >
@@ -43,8 +43,8 @@ export function BaseNode({
           alignItems: 'center',
           gap: '8px',
           padding: '10px 12px',
-          background: 'rgba(0,0,0,0.2)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)'
+          background: 'var(--background-tertiary, rgba(0,0,0,0.05))',
+          borderBottom: '1px solid var(--border-color, rgba(0,0,0,0.1))'
         }}
       >
         <div style={{
