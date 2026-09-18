@@ -257,7 +257,17 @@ export function AutomationsBoard() {
           {/* Node Palette */}
           <div style={{ width: '200px', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
             <h4 style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Arraste para o quadro</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            
+            <button 
+              className="btn btn-primary" 
+              style={{ width: '100%', marginBottom: '0.5rem' }}
+              onClick={saveFlowData}
+              disabled={saving}
+            >
+              {saving ? 'Salvando...' : '💾 Salvar Fluxo'}
+            </button>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', overflowY: 'auto' }}>
               {nodeTypesList.map((nt) => (
                 <div 
                   key={nt.type}
@@ -274,17 +284,6 @@ export function AutomationsBoard() {
                   {nt.label}
                 </div>
               ))}
-            </div>
-            
-            <div style={{ marginTop: 'auto' }}>
-              <button 
-                className="btn btn-primary" 
-                style={{ width: '100%' }}
-                onClick={saveFlowData}
-                disabled={saving}
-              >
-                {saving ? 'Salvando...' : '💾 Salvar Fluxo'}
-              </button>
             </div>
           </div>
 
