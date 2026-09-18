@@ -173,9 +173,17 @@ export async function POST(request: Request) {
                           currentNodeId = nextEdge ? nextEdge.target : null;
                           console.log(`🔀 Usuário escolheu opção ${selectedOptionIndex + 1}. Próximo nó: ${currentNodeId}`);
                         } else {
-                          // Resposta inválida — o bot vai re-processar o nó atual (repetir o menu)
-                          shouldProcessNextNode = true;
-                          console.log(`❌ Resposta inválida para menu: ${userText}. Repetindo menu.`);
+                          // Verifica se existe uma aresta de fallback (resposta inválida)
+                          const fallbackEdge = flowData.edges?.find((e: any) => e.source === currentNodeId && e.sourceHandle === 'fallback');
+                          
+                          if (fallbackEdge) {
+                            currentNodeId = fallbackEdge.target;
+                            console.log(`⚠️ Resposta inválida para menu: ${userText}. Redirecionando para fallback: ${currentNodeId}`);
+                          } else {
+                            // Resposta inválida sem fallback — o bot vai re-processar o nó atual (repetir o menu)
+                            shouldProcessNextNode = true;
+                            console.log(`❌ Resposta inválida para menu: ${userText}. Repetindo menu.`);
+                          }
                         }
                       } else if (previousNode.data?.type === 'schedule_appointment') {
                         const userText = text?.trim() || '';

@@ -50,6 +50,27 @@ export function MenuNode({ data, isConnectable }: any) {
         ) : (
           <div style={{ fontSize: '10px', color: '#888' }}>Nenhuma opção adicionada</div>
         )}
+
+        {/* Invalid Response Fallback */}
+        <div style={{
+          marginTop: '4px',
+          background: 'rgba(255,69,58,0.1)',
+          border: '1px dashed rgba(255,69,58,0.4)',
+          padding: '6px',
+          borderRadius: '4px',
+          position: 'relative',
+          textAlign: 'right',
+          color: 'rgba(255,255,255,0.8)'
+        }}>
+          <span>Em caso de resposta inválida</span>
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="fallback"
+            style={{ top: '50%', right: '-15px', background: '#FF453A' }}
+            isConnectable={isConnectable}
+          />
+        </div>
       </div>
     </div>
   );
