@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { createClient } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
-const supabase = createClient();
+export const KANBAN_STAGES = ['new', 'negotiating', 'won'] as const;
+export type KanbanStage = typeof KANBAN_STAGES[number];
 
 export type Contact = {
   id: string;
@@ -41,6 +43,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
   setContacts: (contacts) => set({ contacts }),
 
   fetchUserOrganization: async () => {
+    const supabase = createClient();
     // Pega a primeira organização da qual o usuário é membro
     const { data, error } = await supabase
       .from('organization_members')
@@ -59,6 +62,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
     set({ loading: true });
     
     // Ordena por updated_at (se houver) ou created_at para as mensagens recentes sempre subirem
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('contacts')
       .select('*')
@@ -73,6 +77,14 @@ export const useCRMStore = create<CRMState>((set, get) => ({
   },
 
   moveContact: async (contactId, newStatus) => {
+    if (!KANBAN_STAGES.includes(newStatus as KanbanStage)) {
+      console.warn(`Status inválido bloqueado pelo store: ${newStatus}`);
+      return;
+    }
+
+    const originalContact = get().contacts.find((c) => c.id === contactId);
+    if (!originalContact || originalContact.status === newStatus) return;
+
     // Atualização Otimista no Zustand
     set((state) => ({
       contacts: state.contacts.map((c) => 
@@ -81,6 +93,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
     }));
 
     // Sincroniza com Supabase
+    const supabase = createClient();
     const { error } = await supabase
       .from('contacts')
       .update({ status: newStatus })
@@ -88,8 +101,13 @@ export const useCRMStore = create<CRMState>((set, get) => ({
 
     if (error) {
       console.error('Error moving contact:', error);
-      // Opcional: Reverter estado em caso de erro
-      get().fetchContacts();
+      toast.error('Erro ao mover contato. Ação revertida.', { description: error.message });
+      // Reverter estado para manter integridade visual
+      set((state) => ({
+        contacts: state.contacts.map((c) => 
+          c.id === contactId ? { ...c, status: originalContact.status } : c
+        ),
+      }));
     }
   },
 
@@ -100,6 +118,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
       ),
     }));
 
+    const supabase = createClient();
     const { error } = await supabase
       .from('contacts')
       .update({ bot_paused: paused })
@@ -125,6 +144,7 @@ export const useCRMStore = create<CRMState>((set, get) => ({
       status: 'new',
     };
 
+    const supabase = createClient();
     const { data, error } = await supabase
       .from('contacts')
       .insert([newContact])

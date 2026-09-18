@@ -6,9 +6,10 @@ import { Contact, useCRMStore } from '@/store/useCRMStore';
 
 interface KanbanCardProps {
   contact: Contact;
+  forceOverlay?: boolean;
 }
 
-export function KanbanCard({ contact }: KanbanCardProps) {
+export function KanbanCard({ contact, forceOverlay = false }: KanbanCardProps) {
   const openModal = useCRMStore((state) => state.openModal);
 
   const {
@@ -23,8 +24,8 @@ export function KanbanCard({ contact }: KanbanCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
-    cursor: 'grab',
+    opacity: isDragging && !forceOverlay ? 0.3 : 1, // original semi-transparente
+    cursor: forceOverlay ? 'grabbing' : 'grab',
   };
 
   const getStatusColor = (status: string) => {
@@ -65,8 +66,10 @@ export function KanbanCard({ contact }: KanbanCardProps) {
         backgroundColor: 'var(--surface-elevated)',
         border: '1px solid var(--border-subtle)',
         borderRadius: 'var(--radius-md)',
-        boxShadow: isDragging ? '0 10px 25px rgba(0,0,0,0.5)' : '0 2px 4px rgba(0,0,0,0.1)',
-        zIndex: isDragging ? 999 : 1,
+        boxShadow: forceOverlay 
+          ? '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3)' 
+          : '0 2px 4px rgba(0,0,0,0.1)',
+        zIndex: forceOverlay ? 9999 : 1,
         touchAction: 'none' // Previne scroll no mobile durante drag
       }}
     >

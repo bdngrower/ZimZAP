@@ -10,10 +10,14 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
+import { KanbanCard } from './KanbanCard';
 import { createClient } from '@/utils/supabase/client';
+import { KANBAN_STAGES } from '@/store/useCRMStore';
 
 const COLUMNS = [
   { id: 'new', title: 'Novos Leads', color: 'var(--accent-primary)' },
@@ -22,8 +26,9 @@ const COLUMNS = [
 ];
 
 export function KanbanBoard() {
-  const { contacts, loading, fetchContacts, moveContact, addMockContact, currentOrganizationId } = useCRMStore();
+  const { contacts, loading, fetchContacts, moveContact, currentOrganizationId } = useCRMStore();
   const [isMounted, setIsMounted] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -55,48 +60,57 @@ export function KanbanBoard() {
     })
   );
 
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
     const { active, over } = event;
 
     // Drop inválido (fora do board)
     if (!over) return;
 
     const contactId = active.id as string;
-    let newStatus = over.id as string;
+    let targetId = over.id as string;
 
-    // Verifica se soltou direto na coluna
-    const isColumn = COLUMNS.some((col) => col.id === newStatus);
-    
-    if (!isColumn) {
-      // Se não é coluna, soltou sobre outro card. Pegamos o status desse card alvo.
-      const targetContact = contacts.find((c) => c.id === newStatus);
-      if (targetContact) {
+    // Acha o card arrastado
+    const contact = contacts.find((c) => c.id === contactId);
+    if (!contact) return;
+
+    let newStatus = targetId;
+
+    // Se o alvo não for uma coluna válida (KANBAN_STAGES), vamos descobrir de onde veio
+    if (!KANBAN_STAGES.includes(newStatus as any)) {
+      // Significa que soltou sobre outro card (o over é o ID do card alvo)
+      const targetContact = contacts.find((c) => c.id === targetId);
+      if (targetContact && KANBAN_STAGES.includes(targetContact.status as any)) {
         newStatus = targetContact.status;
       } else {
-        return; // Alvo não reconhecido
+        // Alvo inválido (soltou em lugar desconhecido)
+        return; 
       }
     }
 
-    const contact = contacts.find((c) => c.id === contactId);
-
-    if (contact && contact.status !== newStatus) {
+    if (contact.status !== newStatus) {
       moveContact(contactId, newStatus);
     }
   };
+
+  const activeContact = activeId ? contacts.find((c) => c.id === activeId) : null;
 
   if (!isMounted) return null; // Previne hydration mismatch
   if (loading) return <div style={{ padding: '2rem' }}>Carregando CRM...</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Test Controls Removido para produção */}
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflowX: 'auto', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', flex: 1, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '1rem' }}>
           {COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}
@@ -107,6 +121,9 @@ export function KanbanBoard() {
             />
           ))}
         </div>
+        <DragOverlay>
+          {activeContact ? <KanbanCard contact={activeContact} forceOverlay={true} /> : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

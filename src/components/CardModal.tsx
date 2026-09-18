@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useCRMStore } from '@/store/useCRMStore';
 import { createClient } from '@/utils/supabase/client';
+import { toast } from 'sonner';
 
 export function CardModal() {
   const { contacts, activeContactId, closeModal, toggleBotPaused } = useCRMStore();
@@ -152,14 +153,14 @@ export function CardModal() {
         setScheduleMessage('');
         setScheduleDate('');
         setScheduleTime('');
-        alert('Mensagem agendada com sucesso!');
+        toast.success('Mensagem agendada com sucesso!');
       } else {
         const data = await res.json().catch(() => ({}));
-        alert(`Erro ao agendar: ${data.error || 'Falha na requisição'}`);
+        toast.error(`Erro ao agendar: ${data.error || 'Falha na requisição'}`);
       }
     } catch (err) {
       console.error('Erro ao agendar:', err);
-      alert('Erro inesperado ao agendar mensagem.');
+      toast.error('Erro inesperado ao agendar mensagem.');
     } finally {
       setScheduling(false);
     }
@@ -186,17 +187,18 @@ export function CardModal() {
       <div 
         className="glass-panel"
         style={{
-          width: '100%',
+          width: '90%',
           maxWidth: '800px',
-          height: '80vh',
+          height: '85vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          zIndex: 1000,
         }}
         onClick={(e) => e.stopPropagation()} // Evita fechar ao clicar dentro
       >
         {/* Header */}
-        <header style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <header style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-subtle)', background: 'var(--surface-elevated)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{contact?.name?.charAt(0) || '?'}</span>
@@ -219,9 +221,9 @@ export function CardModal() {
               onClick={() => toggleBotPaused(contact.id, !contact.bot_paused)}
               className="btn"
               style={{
-                background: contact.bot_paused ? 'rgba(48, 209, 88, 0.2)' : 'rgba(255, 69, 58, 0.2)',
-                color: contact.bot_paused ? '#30D158' : '#FF453A',
-                border: `1px solid ${contact.bot_paused ? 'rgba(48, 209, 88, 0.5)' : 'rgba(255, 69, 58, 0.5)'}`,
+                background: contact.bot_paused ? 'var(--success-bg)' : 'var(--danger-bg)',
+                color: contact.bot_paused ? 'var(--success)' : 'var(--danger)',
+                border: `1px solid ${contact.bot_paused ? 'var(--success-border)' : 'var(--danger-border)'}`,
                 padding: '6px 12px',
                 fontSize: '0.85rem'
               }}
@@ -229,7 +231,7 @@ export function CardModal() {
               {contact.bot_paused ? 'Devolver para Bot' : 'Assumir Atendimento'}
             </button>
             <button 
-              className="btn btn-glass"
+              className="btn btn-ghost"
               style={{ padding: '8px', borderRadius: '50%' }}
               onClick={closeModal}
             >
@@ -262,27 +264,27 @@ export function CardModal() {
             Agendamento
           </button>
         </div>
-
         {/* Content */}
-        <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: '1.5rem', overflowY: 'auto', background: 'var(--surface-base)' }}>
           
           {activeTab === 'chat' && (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '1rem' }}>
-              <div style={{ flex: 1, background: 'rgba(0,0,0,0.2)', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
+              <div style={{ flex: 1, background: 'var(--surface-elevated)', borderRadius: 'var(--radius-md)', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', border: '1px solid var(--border-subtle)' }}>
                 {messages.length === 0 ? (
-                  <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Nenhuma mensagem ainda.</p>
+                  <p style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Nenhuma mensagem ainda.</p>
                 ) : (
                   messages.map(msg => (
                     <div key={msg.id} style={{ 
                       alignSelf: msg.direction === 'inbound' ? 'flex-start' : 'flex-end', 
-                      background: msg.direction === 'inbound' ? 'rgba(255,255,255,0.05)' : 'var(--accent-primary)', 
-                      padding: '0.8rem', 
+                      background: msg.direction === 'inbound' ? 'var(--surface-raised)' : 'var(--brand-primary)', 
+                      color: msg.direction === 'inbound' ? 'var(--text-primary)' : 'var(--brand-foreground)',
+                      padding: '0.85rem 1rem', 
                       borderRadius: msg.direction === 'inbound' ? '12px 12px 12px 0' : '12px 12px 0 12px', 
-                      maxWidth: '80%',
-                      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                      maxWidth: '85%',
+                      boxShadow: 'var(--shadow-sm)'
                     }}>
-                      <p style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'pre-wrap' }}>{msg.content}</p>
-                      <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: '4px', textAlign: 'right' }}>
+                      <p style={{ margin: 0, fontSize: '0.9rem', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{msg.content}</p>
+                      <span style={{ fontSize: '0.7rem', color: msg.direction === 'inbound' ? 'var(--text-muted)' : 'rgba(255,255,255,0.7)', display: 'block', marginTop: '6px', textAlign: 'right' }}>
                         {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Agora'}
                         {msg.direction === 'outbound' && ` • ${msg.status}`}
                       </span>
@@ -291,19 +293,19 @@ export function CardModal() {
                 )}
                 <div ref={messagesEndRef} />
               </div>
-              <div style={{ position: 'relative', display: 'flex', gap: '0.5rem' }}>
+              <div style={{ position: 'relative', display: 'flex', gap: '0.75rem' }}>
                 {filteredReplies.length > 0 && (
-                  <div style={{ position: 'absolute', bottom: '100%', left: 0, width: '100%', background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '8px', overflow: 'hidden', zIndex: 10, boxShadow: '0 -4px 12px rgba(0,0,0,0.5)' }}>
+                  <div style={{ position: 'absolute', bottom: '100%', left: 0, width: '100%', background: 'var(--surface-elevated)', border: '1px solid var(--border-strong)', borderRadius: 'var(--radius-md)', marginBottom: '8px', overflow: 'hidden', zIndex: 10, boxShadow: 'var(--shadow-lg)' }}>
                     {filteredReplies.map(qr => (
                       <div 
                         key={qr.id} 
                         onClick={() => { setNewMessage(qr.content); setFilteredReplies([]); }}
-                        style={{ padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center' }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+                        style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', transition: 'background 0.2s' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-raised)')}
                         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
-                        <strong style={{ color: 'var(--accent-primary)', marginRight: '8px', minWidth: '80px' }}>{qr.shortcut}</strong>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{qr.content}</span>
+                        <strong style={{ color: 'var(--brand-primary)', marginRight: '12px', minWidth: '80px', fontSize: '0.9rem' }}>{qr.shortcut}</strong>
+                        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{qr.content}</span>
                       </div>
                     ))}
                   </div>
@@ -312,43 +314,40 @@ export function CardModal() {
                   type="text" 
                   placeholder="Digite sua mensagem ou / para atalhos..." 
                   className="input" 
-                  style={{ flex: 1 }} 
+                  style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: 'var(--radius-full)' }} 
                   value={newMessage}
                   onChange={handleInputChange}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                 />
-                <button className="btn btn-primary" onClick={handleSendMessage} disabled={sending || !newMessage.trim()}>
-                  {sending ? 'Enviando...' : 'Enviar'}
+                <button className="btn btn-primary" style={{ borderRadius: 'var(--radius-full)', padding: '0 1.5rem' }} onClick={handleSendMessage} disabled={sending || !newMessage.trim()}>
+                  {sending ? '...' : 'Enviar'}
                 </button>
               </div>
             </div>
           )}
 
-
-
           {activeTab === 'agendamento' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <p style={{ color: 'var(--text-secondary)' }}>Programe uma mensagem para ser enviada automaticamente no futuro.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '600px', margin: '0 auto', paddingTop: '1rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>Programe uma mensagem para ser enviada automaticamente no futuro.</p>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Data</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Data</label>
                   <input type="date" className="input" style={{ width: '100%' }} value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Hora</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Hora</label>
                   <input type="time" className="input" style={{ width: '100%' }} value={scheduleTime} onChange={e => setScheduleTime(e.target.value)} />
                 </div>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Mensagem</label>
-                <textarea className="input" rows={4} style={{ width: '100%', resize: 'none' }} placeholder="Escreva a mensagem a ser agendada..." value={scheduleMessage} onChange={e => setScheduleMessage(e.target.value)}></textarea>
+                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Mensagem</label>
+                <textarea className="input" rows={5} style={{ width: '100%', resize: 'none' }} placeholder="Escreva a mensagem a ser agendada..." value={scheduleMessage} onChange={e => setScheduleMessage(e.target.value)}></textarea>
               </div>
               <button className="btn btn-primary" style={{ alignSelf: 'flex-start' }} onClick={handleScheduleMessage} disabled={scheduling || !scheduleDate || !scheduleTime || !scheduleMessage.trim()}>
                 {scheduling ? 'Agendando...' : 'Agendar Envio'}
               </button>
             </div>
           )}
-
         </div>
       </div>
     </div>
