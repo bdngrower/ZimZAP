@@ -78,10 +78,11 @@ export function KanbanCard({ contact, forceOverlay = false }: KanbanCardProps) {
           {contact.name}
         </h4>
         <button 
-          onClick={(e) => {
+          onPointerDown={(e) => {
             e.stopPropagation();
             openModal(contact.id);
           }}
+          onClick={(e) => e.stopPropagation()}
           style={{ 
             background: 'rgba(255,255,255,0.1)', 
             border: '1px solid rgba(255,255,255,0.2)', 
