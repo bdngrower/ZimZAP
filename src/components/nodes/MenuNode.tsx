@@ -31,18 +31,22 @@ export function MenuNode({ data, isConnectable }: any) {
         {data.options && data.options.length > 0 ? (
           data.options.map((opt: string, index: number) => (
             <div key={index} style={{ 
-              background: 'rgba(255,255,255,0.1)', 
-              padding: '6px', 
-              borderRadius: '4px',
+              background: 'white', 
+              color: 'black',
+              padding: '4px 12px', 
+              borderRadius: '16px',
               position: 'relative',
-              textAlign: 'right'
+              textAlign: 'center',
+              fontSize: '11px',
+              fontWeight: 500,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               <span>{opt}</span>
               <Handle
                 type="source"
                 position={Position.Right}
                 id={`option-${index}`}
-                style={{ top: '50%', right: '-15px', background: '#4caf50' }}
+                style={{ top: '50%', right: '-8px', background: '#4caf50', border: '2px solid white' }}
                 isConnectable={isConnectable}
               />
             </div>
