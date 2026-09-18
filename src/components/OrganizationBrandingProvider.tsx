@@ -15,24 +15,37 @@ export function OrganizationBrandingProvider({ children }: { children: React.Rea
   }, [currentOrganizationId, fetchBranding]);
 
   useEffect(() => {
-    if (branding) {
-      // Aplica as cores ao :root
-      document.documentElement.style.setProperty('--brand-primary', branding.primary_color);
-      document.documentElement.style.setProperty('--brand-secondary', branding.secondary_color);
+    if (!branding) return;
 
-      // Aplica o tema
-      if (branding.theme === 'light') {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-        // Adicionar class no body também pode ser útil dependendo da config do tailwind
-      } else if (branding.theme === 'dark') {
+    // Aplica as cores ao :root
+    document.documentElement.style.setProperty('--brand-primary', branding.primary_color);
+    document.documentElement.style.setProperty('--brand-secondary', branding.secondary_color);
+
+    // Salva o tema no localStorage para evitar FOUC no próximo reload
+    localStorage.setItem('zimzap-theme', branding.theme);
+
+    const applyTheme = (theme: string) => {
+      const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+      if (isDark) {
         document.documentElement.classList.remove('light');
         document.documentElement.classList.add('dark');
       } else {
-        // System
-        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
       }
+    };
+
+    applyTheme(branding.theme);
+
+    if (branding.theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => applyTheme('system');
+      
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
+
   }, [branding]);
 
   return <>{children}</>;
