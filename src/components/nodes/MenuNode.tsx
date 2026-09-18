@@ -1,81 +1,101 @@
-import { Handle, Position } from 'reactflow';
+import React, { memo } from 'react';
+import { BaseNode } from './BaseNode';
+import { ListTree } from 'lucide-react';
+import { Handle, Position, NodeProps } from 'reactflow';
 
-export function MenuNode({ data, isConnectable }: any) {
+export const MenuNode = memo(({ data, isConnectable, selected }: NodeProps) => {
+  const options = data.options || [];
+  const hasWarning = options.length === 0;
+
   return (
-    <div style={{
-      background: 'rgba(20,20,20,0.9)',
-      border: '1px solid rgba(255,255,255,0.2)',
-      padding: '10px 15px',
-      borderRadius: '8px',
-      minWidth: '200px',
-      color: 'white',
-      fontSize: '12px'
-    }}>
-      {/* Input Handle (Left) */}
-      <Handle 
-        type="target" 
-        position={Position.Left} 
-        isConnectable={isConnectable} 
-        style={{ background: '#555' }}
-      />
-      
-      <div style={{ marginBottom: '8px', fontWeight: 'bold', color: '#ffb347' }}>
-        🔀 Oferecer Escolhas
-      </div>
-      <div style={{ marginBottom: '12px', whiteSpace: 'pre-wrap' }}>
-        {data.content || 'Faça uma pergunta...'}
-      </div>
-
-      {/* Dynamic Handles for Options */}
+    <BaseNode
+      title="Oferecer Escolhas"
+      icon={ListTree}
+      color="#f97316" // orange
+      selected={selected}
+      status={hasWarning ? 'warning' : 'default'}
+      hasOutput={false} // We provide custom handles
+    >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {data.options && data.options.length > 0 ? (
-          data.options.map((opt: string, index: number) => (
-            <div key={index} style={{ 
-              background: 'white', 
-              color: 'black',
-              padding: '4px 12px', 
-              borderRadius: '16px',
-              position: 'relative',
-              textAlign: 'center',
-              fontSize: '11px',
-              fontWeight: 500,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              <span>{opt}</span>
+        {options.length > 0 ? (
+          options.map((opt: string, index: number) => (
+            <div 
+              key={index}
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                padding: '6px 24px 6px 10px',
+                borderRadius: '4px',
+                fontSize: '0.8rem',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                minHeight: '30px'
+              }}
+            >
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
+                {opt}
+              </span>
               <Handle
                 type="source"
                 position={Position.Right}
                 id={`option-${index}`}
-                style={{ top: '50%', right: '-8px', background: '#4caf50', border: '2px solid white' }}
                 isConnectable={isConnectable}
+                style={{
+                  width: 12,
+                  height: 12,
+                  background: 'var(--background-primary)',
+                  border: '2px solid #f97316',
+                  right: -6,
+                  top: '50%',
+                  transform: 'translateY(-50%)'
+                }}
               />
             </div>
           ))
         ) : (
-          <div style={{ fontSize: '10px', color: '#888' }}>Nenhuma opção adicionada</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '4px 0' }}>
+            Nenhuma opção
+          </div>
         )}
 
-        {/* Invalid Response Fallback */}
-        <div style={{
-          marginTop: '4px',
-          background: 'rgba(255,69,58,0.1)',
-          border: '1px dashed rgba(255,69,58,0.4)',
-          padding: '6px',
-          borderRadius: '4px',
-          position: 'relative',
-          textAlign: 'right',
-          color: 'rgba(255,255,255,0.8)'
-        }}>
-          <span>Em caso de resposta inválida</span>
+        {/* Fallback Handle */}
+        <div 
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px dashed rgba(239, 68, 68, 0.3)',
+            padding: '6px 24px 6px 10px',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: '4px',
+            minHeight: '30px'
+          }}
+        >
+          <span style={{ color: 'var(--danger)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            Resposta inválida
+          </span>
           <Handle
             type="source"
             position={Position.Right}
             id="fallback"
-            style={{ top: '50%', right: '-15px', background: '#FF453A' }}
             isConnectable={isConnectable}
+            style={{
+              width: 12,
+              height: 12,
+              background: 'var(--background-primary)',
+              border: '2px solid var(--danger)',
+              right: -6,
+              top: '50%',
+              transform: 'translateY(-50%)'
+            }}
           />
         </div>
       </div>
-    </div>
+    </BaseNode>
   );
-}
+});
+
+MenuNode.displayName = 'MenuNode';

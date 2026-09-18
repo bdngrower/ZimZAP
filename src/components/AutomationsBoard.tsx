@@ -13,7 +13,8 @@ import ReactFlow, {
   Node,
   NodeChange,
   EdgeChange,
-  MarkerType
+  MarkerType,
+  BackgroundVariant
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { createClient } from '@/utils/supabase/client';
@@ -22,12 +23,22 @@ import { MenuNode } from './nodes/MenuNode';
 import { DelayNode } from './nodes/DelayNode';
 import { HumanHandoffNode } from './nodes/HumanHandoffNode';
 import { ScheduleNode } from './nodes/ScheduleNode';
+import { MessageNode } from './nodes/MessageNode';
+import { InputNameNode } from './nodes/InputNameNode';
+import { InputEmailNode } from './nodes/InputEmailNode';
+import { AddTagNode } from './nodes/AddTagNode';
+import { DefaultNodeWrapper } from './nodes/DefaultNodeWrapper';
 
 const nodeTypes = {
+  message: MessageNode,
   offer_choices: MenuNode,
+  input_name: InputNameNode,
+  input_email: InputEmailNode,
+  add_tag: AddTagNode,
   delay: DelayNode,
   human_handoff: HumanHandoffNode,
   schedule_appointment: ScheduleNode,
+  default: DefaultNodeWrapper,
 };
 
 const nodeTypesList = [
@@ -148,7 +159,7 @@ export function AutomationsBoard() {
 
       const newNode: Node = {
         id: `node_${Date.now()}`,
-        type: type === 'offer_choices' ? 'offer_choices' : 'default',
+        type, // Directly use the specific type (message, input_name, etc.)
         position,
         data: { 
           label: nodeTypesList.find(n => n.type === type)?.label, 
@@ -300,7 +311,7 @@ export function AutomationsBoard() {
               defaultEdgeOptions={{ type: 'smoothstep', style: { strokeWidth: 2, stroke: '#8b5cf6' } }}
               fitView
             >
-              <Background color="#555" gap={16} variant="dots" size={1} />
+              <Background color="#555" gap={16} variant={BackgroundVariant.Dots} size={1} />
               <Controls position="bottom-left" />
               <MiniMap 
                 nodeStrokeColor="#000" 
