@@ -77,8 +77,26 @@ export function KanbanCard({ contact, forceOverlay = false }: KanbanCardProps) {
         <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600, color: 'var(--text-primary)' }}>
           {contact.name}
         </h4>
-        <button style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-          ⋮
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            openModal(contact.id);
+          }}
+          style={{ 
+            background: 'rgba(255,255,255,0.1)', 
+            border: '1px solid rgba(255,255,255,0.2)', 
+            color: 'var(--text-primary)', 
+            cursor: 'pointer',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px'
+          }}
+        >
+          💬 Chat
         </button>
       </div>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem 0' }}>
